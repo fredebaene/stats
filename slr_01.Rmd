@@ -1,0 +1,290 @@
+---
+title: "Simple Linear Regression"
+author: "Frederick De Baene"
+date: "2024-11-19"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE}
+set.seed(123)
+```
+
+# Introduction
+
+The simple linear regression model is represented as follows:
+
+$$
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i.
+$$
+
+The following restrictions are enforced:
+
+- $E[\epsilon_i] = 0$
+- $Var(\epsilon_i) = \sigma^2$
+- $\epsilon_i$ is normally distributed
+- $Cov(\epsilon_i, \epsilon_j) = 0$ for $i \neq j$.
+
+The responses are drawn from conditional probability distributions. These 
+conditional probability distributions condition on the level of the predictor 
+variable. The mean of the conditional probability distributions of the response 
+depends on the level of the predictor. The regression function relates the 
+expected value for the response the the predictor value:
+
+$$
+E[Y_i] = E[\beta_0 + \beta_1 x_i + \epsilon_i] = E[\beta_0] + E[\beta_1 x_i] + E[\epsilon_i] = \beta_0 + \beta_1 x_i.
+$$
+
+Remember that $E[\epsilon_i] = 0$.
+
+# Simulations
+
+We assume the following simple linear regression model for the population:
+
+$$
+Y = 10 + 2X + \epsilon_i.
+$$
+
+In this example, we consider a sample comprising 10 observations. For each observation, 
+the level for $X$ is fixed. We repeatedly sample an outcome for each observation from 
+their respective conditional probability distributions for the outcome.
+
+```{r}
+# Initialize the population parameters and the simulation size
+beta_0 <- 10
+beta_1 <- 2
+err_var <- 4
+n_sim <- 10000
+n <- n_sim * 10
+
+# Initialize a vector with varying levels for the predictor
+x <- seq(from = 0, to = 90, by = 10)
+
+# Initialize a matrix to hold the outcomes for the simulations
+y <- matrix(
+  data = rep(NA, times = length(x) * n_sim),
+  nrow = length(x), ncol = n_sim
+)
+```
+
+```{r}
+# During each simulation, for each level of the predictor, sample from the 
+# conditional probability distribution of the response
+for (i in 1:n_sim) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+```
+
+## Assumptions and Restrictions
+
+### Independent Errors
+
+The assumption of independent and identically distributed errors is stated as follows:
+
+$$
+\epsilon_{i} \sim \mathcal{N}(0, \sigma^2)
+$$
+
+and
+
+$$
+Cov(\epsilon_i, \epsilon_j) = 0 \space \space with \space \space i \neq j.
+$$
+
+Note that $\sigma^2$ is the variance of the conditional probability distributions of $Y$ 
+across all levels of $X$. Later on, we will see that one of the assumptions of linear regression 
+states that the variance for all conditional probability distributions of $Y$ is equal. Therefore, 
+we do not have to write $\sigma_{i}^{2}$ but we can just write $\sigma^2$.
+
+**Simulation setup.** In the simulation setup, we make use of a sample comprising 10 
+observations. For each observation, we keep the level of $X$ fixed. Suppose we zoom in 
+on observations $i = 3$ and $i = 5$. Their predictor values are:
+
+```{r}
+x[3]
+x[5]
+```
+
+Given that the population parameters are known, we can determine the mean of the conditional 
+probability distributions for $i = 3$ and $i = 5$ given $X$:
+
+$$
+\begin{aligned}
+E(Y_{i} | x_{i}) &= \beta_0 + \beta_1 \times x_{i} \\
+&= 10 + 2 \times x_{i} \\
+\end{aligned}
+$$
+
+This gives us the following:
+
+$$
+\begin{aligned}
+E(Y_{3} | x_{3}) = E(Y_{3} | 20) 
+&= 10 + 2 \times 20 \\
+&= 50
+\end{aligned}
+$$
+
+and
+
+$$
+\begin{aligned}
+E(Y_{5} | x_{5}) = E(Y_{5} | 40) 
+&= 10 + 2 \times 40 \\
+&= 90
+\end{aligned}
+$$
+
+Given the means of the conditional probability distributions of $Y$ for $i = 3$ and $i = 5$, 
+we can draw the curves representing the conditional probability distributions for these two 
+observations. From the population model we know that $\sigma^2 = 4$.
+
+```{r echo = FALSE}
+x_3_mean <- 50
+x_3 <- seq(from = 40, to = 60, length = 1000)
+y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+plot(x_3, y_3, xlab = "Y3", ylab = "")
+```
+
+Looking at the actual outcomes, we observe the following distribution for $Y_3$:
+
+```{r echo = FALSE}
+hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+```
+
+
+```{r echo = FALSE}
+x_5_mean <- 90
+x_5 <- seq(from = 80, to = 100, length = 1000)
+y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+plot(x_5, y_5, xlab = "Y5", ylab = "")
+```
+
+Looking at the actual outcomes, we observe the following distribution for $Y_5$:
+
+```{r echo = FALSE}
+hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+```
+
+The error terms are independent. This implies that the error terms for $i = 3$ are not 
+correlated with the error terms for $i = 5$. The following scatter plot indicates that 
+the error terms are independent:
+
+```{r echo = FALSE}
+i_3_res <- y[3, ] - x_3_mean
+i_5_res <- y[5, ] - x_5_mean
+plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+abline(h = 0, col = "red")
+abline(v = 0, col = "red")
+```
+
+The covariance $Cov(\epsilon_{3}, \epsilon_{5}) = `r round(cov(i_3_res, i_5_res), 3)`$ and 
+the scatter plot indicate no correlation between the error terms for $i = 3$ and $i = 5$. Also 
+note the horizontal and vertical red lines, which seem to indicate that the mean for $\epsilon_{3}$ 
+and $\epsilon_{5}$ is 0, in accordance with the assumption $\epsilon_{i} \sim \mathcal{N}(0, \sigma^2)$.
+
+A variance-covariance matrix is a square matrix. The diagonal elements equal 
+the variance of the error terms $\sigma^2$, while the off-diagonal elements 
+equal the covariance $Cov(\epsilon_i, \epsilon_j)$ with $i \neq j$.
+
+```{r}
+vars <- rep(NA, times = nrow(y))
+for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+```
+
+## Variance
+
+The variance $\sigma^2$ of the conditional probability distributions of $Y$ is the same for each 
+level of $X$. A point estimator for $\sigma^2$ is the mean squared error (MSE). We must take 
+into account that the deviations for each observation are the deviations between the observations 
+and the mean of their respective conditional probability distribution.
+
+For $i = 3$, the mean of the conditional probability distribution is 50. Therefore, to calculate 
+the deviance for $i = 3$, we do:
+
+$$
+Y_{3} - E(Y_{3} | 20) = Y_{3} - 50
+$$
+
+For $i = 5$, we have:
+
+$$
+Y_{5} - E(Y_{5} | 40) = Y_{5} - 90
+$$
+
+To calculate the sum of squared errors taking into account the means of the conditional 
+probability distributions, we utilize the residuals (or errors):
+
+$$
+E_{i} = Y_{i} - E(Y_{i} | X_{i}) = Y_{i} - \hat{Y}_{i}
+$$
+
+The sum of squared errors is calculated as follows:
+
+$$
+SSE = \sum_{i = 1}^{n} (Y_{i} - \hat{Y}_{i})^2
+$$
+
+To obtain the variance, we divide the sum of squares by its associated number of degrees 
+of freedom. For a simple linear regression model, this is $n - 2$, because we need two 
+parameters $\beta_0$ and $\beta_1$ to calculate (or estimate) the means of the conditional 
+probability distributions of $Y$. This gives us:
+
+$$
+MSE = \frac{SSE}{n - 2} = \frac{\sum_{i = 1}^{n} (Y_{i} - \hat{Y}_{i})^2}{n - 2}
+$$
+
+The mean squared error is a point estimator for $\sigma^2$:
+
+$$
+s^2 = MSE
+$$
+
+We know that $\sigma^2 = `r err_var`$. Now let's verify that the mean squared error 
+is an appropriate point estimator for $\sigma^2$:
+
+```{r}
+# First, calculate the mean of the conditional probability distributions of Y
+estimated_means <- beta_0 + beta_1 * x
+
+# Second, calculate the residuals
+errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+
+# Third, sum the squared errors and divide by the appropriate degress of freedom
+mse <- sum(errors^2) / (n - 2)
+```
+
+We see that our estimate $s^2 = `r round(mse, 2)`$ approximates $\sigma^2 = `r err_var`$.
+
+## Inference
+
+### $\beta_1$
+
+We know that the estimator $B1$ for the population parameter $\beta_1$ is unbiased:
+
+$$
+E[B1] = \beta_1
+$$
+
+The ground truth states $\beta_1 = 2$. Let us repeatedly calculate an estimate for 
+$\beta_1$ using the estimator $B1$.
+
+```{r}
+beta_1_estimates <- rep(NA, times = ncol(y))
+for (i in 1:ncol(y)) beta_1_estimates[i] <- glm(y[, i] ~ x)$coefficients[2]
+```
+
+```{r}
+hist(beta_1_estimates)
+```
+
+```{r}
+qqnorm(beta_1_estimates)
+qqline(beta_1_estimates)
+```
+
+
+
