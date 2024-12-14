@@ -1,0 +1,2 @@
+"0","# We studentize B1 to obtain the studentized statistics"
+"0","slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates"

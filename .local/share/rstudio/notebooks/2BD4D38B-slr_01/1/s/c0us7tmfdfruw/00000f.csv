@@ -1,0 +1,2 @@
+"0","# We standardize B1 to obtain the standardized statistics"
+"0","slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se"

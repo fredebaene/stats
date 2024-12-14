@@ -1,0 +1,2 @@
+"0","b1_var <- err_var / sum((x - mean(x))^2)"
+"0","b1_se <- sqrt(b1_var)"

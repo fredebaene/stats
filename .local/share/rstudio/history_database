@@ -1,0 +1,1571 @@
+1734173465493:knitr::opts_chunk$set(echo = TRUE)
+1734173465671:set.seed(123)
+1734173465709:# Initialize the population parameters and the simulation size
+1734173465710:beta_0 <- 10
+1734173465710:beta_1 <- 2
+1734173465714:err_var <- 4
+1734173465748:n_sim <- 10000
+1734173465749:n <- n_sim * 10
+1734173465751:# Initialize a vector with varying levels for the predictor
+1734173465751:x <- seq(from = 0, to = 90, by = 10)
+1734173465754:# Initialize a matrix to hold the outcomes for the simulations
+1734173465754:y <- matrix(
+1734173465755:data = rep(NA, times = length(x) * n_sim),
+1734173465755:nrow = length(x), ncol = n_sim
+1734173465756:)
+1734173465759:# During each simulation, for each level of the predictor, sample from the
+1734173465760:# conditional probability distribution of the response
+1734173465760:for (i in 1:n_sim) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734173465795:x[3]
+1734173465796:x[5]
+1734173465799:x_3_mean <- 50
+1734173465803:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734173465806:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734173465808:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734173465906:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734173465993:x_5_mean <- 90
+1734173465995:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734173465997:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734173466000:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734173466053:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734173466095:i_3_res <- y[3, ] - x_3_mean
+1734173466096:i_5_res <- y[5, ] - x_5_mean
+1734173466098:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734173466278:abline(h = 0, col = "red")
+1734173466280:abline(v = 0, col = "red")
+1734173466339:vars <- rep(NA, times = nrow(y))
+1734173466341:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734173466348:# First, calculate the mean of the conditional probability distributions of Y
+1734173466348:estimated_means <- beta_0 + beta_1 * x
+1734173466350:# Second, calculate the residuals
+1734173466350:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734173466352:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734173466352:mse <- sum(errors^2) / (n - 2)
+1734173472919:View(y)
+1734173482077:y[, 1]
+1734173489445:ncol(y)
+1734173507938:glm(y[, 1] ~ x, family = gaussian)
+1734173511740:fit <- glm(y[, 1] ~ x, family = gaussian)
+1734173516442:fit$coefficients
+1734173518937:fit$coefficients[x]
+1734173522628:fit$coefficients
+1734173525030:fit$coefficients[2]
+1734173619712:knitr::opts_chunk$set(echo = TRUE)
+1734173619719:set.seed(123)
+1734173619721:# Initialize the population parameters and the simulation size
+1734173619721:beta_0 <- 10
+1734173619722:beta_1 <- 2
+1734173619723:err_var <- 4
+1734173619724:sim_size <- 10000
+1734173619725:n <- sim_size * 10
+1734173619726:# Initialize a vector with varying levels for the predictor
+1734173619726:x <- seq(from = 0, to = 90, by = 10)
+1734173619727:# Initialize a matrix to hold the outcomes for the simulations
+1734173619728:y <- matrix(
+1734173619728:data = rep(NA, times = length(x) * sim_size),
+1734173619728:nrow = length(x), ncol = sim_size
+1734173619729:)
+1734173619841:# During each simulation, for each level of the predictor, sample from the
+1734173619879:# conditional probability distribution of the response
+1734173619923:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734173619999:x[3]
+1734173620034:x[5]
+1734173620081:x_3_mean <- 50
+1734173620122:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734173620199:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734173620274:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734173620367:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734173620443:x_5_mean <- 90
+1734173620492:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734173620531:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734173620577:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734173620669:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734173620760:i_3_res <- y[3, ] - x_3_mean
+1734173620803:i_5_res <- y[5, ] - x_5_mean
+1734173620855:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734173621088:abline(h = 0, col = "red")
+1734173621138:abline(v = 0, col = "red")
+1734173621239:vars <- rep(NA, times = nrow(y))
+1734173621285:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734173621337:# First, calculate the mean of the conditional probability distributions of Y
+1734173621379:estimated_means <- beta_0 + beta_1 * x
+1734173621433:# Second, calculate the residuals
+1734173621504:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734173621557:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734173621606:mse <- sum(errors^2) / (n - 2)
+1734173641724:beta_1_estimates <- rep(NA, times = sim_size)
+1734173647080:beta_1_estimates
+1734173651754:length(beta_1_estimates)
+1734173662611:?fit
+1734173746986:# We will use the repeated samples that were drawn above. We not immediatly obtain
+1734173747021:# all the point estimates for the slope but also for the intercept of the model.
+1734173747049:beta_0_estimates <- rep(NA, times = sim_size)
+1734173747081:beta_1_estimates <- rep(NA, times = sim_size)
+1734173747120:for (i in 1:sim_size) {
+1734173747180:fit <- glm(y[, i] ~ x, family = gaussian)
+1734173747217:beta_0_estimates[i] <- fit$coefficients[1]
+1734173747251:beta_1_estimates[i] <- fit$coefficients[2]
+1734173747310:}
+1734173910579:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734175371596:knitr::opts_chunk$set(echo = TRUE)
+1734175371642:set.seed(123)
+1734175371755:# Initialize the population parameters and the simulation size
+1734175371790:beta_0 <- 10
+1734175371817:beta_1 <- 2
+1734175371844:err_var <- 4
+1734175371880:sim_size <- 10000
+1734175371909:n <- sim_size * 10
+1734175371945:# Initialize a vector with varying levels for the predictor
+1734175371975:x <- seq(from = 0, to = 90, by = 10)
+1734175372005:# Initialize a matrix to hold the outcomes for the simulations
+1734175372038:y <- matrix(
+1734175372090:data = rep(NA, times = length(x) * sim_size),
+1734175372120:nrow = length(x), ncol = sim_size
+1734175372162:)
+1734175372193:# During each simulation, for each level of the predictor, sample from the
+1734175372240:# conditional probability distribution of the response
+1734175372270:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734175372333:x[3]
+1734175372361:x[5]
+1734175372399:x_3_mean <- 50
+1734175372427:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734175372456:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734175372491:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734175372575:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734175372659:x_5_mean <- 90
+1734175372688:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734175372719:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734175372757:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734175372840:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734175372909:i_3_res <- y[3, ] - x_3_mean
+1734175372938:i_5_res <- y[5, ] - x_5_mean
+1734175372966:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734175373180:abline(h = 0, col = "red")
+1734175373206:abline(v = 0, col = "red")
+1734175373295:vars <- rep(NA, times = nrow(y))
+1734175373355:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734175373424:# First, calculate the mean of the conditional probability distributions of Y
+1734175373492:estimated_means <- beta_0 + beta_1 * x
+1734175373524:# Second, calculate the residuals
+1734175373558:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734175373586:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734175373616:mse <- sum(errors^2) / (n - 2)
+1734175373657:# We will use the repeated samples that were drawn above. We not immediatly obtain
+1734175373685:# all the point estimates for the slope but also for the intercept of the model.
+1734175373730:beta_0_estimates <- rep(NA, times = sim_size)
+1734175373799:beta_1_estimates <- rep(NA, times = sim_size)
+1734175373831:for (i in 1:sim_size) {
+1734175373896:fit <- glm(y[, i] ~ x, family = gaussian)
+1734175373930:beta_0_estimates[i] <- fit$coefficients[1]
+1734175373971:beta_1_estimates[i] <- fit$coefficients[2]
+1734175374042:}
+1734175380120:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734176297314:err_var
+1734176410395:x
+1734176414154:x - mean(x)
+1734176421995:(x - mean(x))^2
+1734176425855:sum((x - mean(x))^2)
+1734176452075:# First, we must obtain the sum of the squared deviations of the predictor
+1734176452107:x
+1734176455652:# First, we must obtain the sum of the squared deviations of the predictor
+1734176455681:x - mean(x)
+1734176460678:# First, we must obtain the sum of the squared deviations of the predictor
+1734176460705:(x - mean(x))^2
+1734176466282:# First, we must obtain the sum of the squared deviations of the predictor
+1734176466316:sum((x - mean(x))^2)
+1734176514051:# First, we must obtain the sum of the squared deviations of the predictor
+1734176514090:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734176530784:4 / sum_sqrd_devs_x
+1734176578093:sum_sqrd_devs_x
+1734176778620:beta_1_var <- 4 / sum_sqrd_devs_x
+1734176780879:beta_1_var
+1734176786046:beta_1
+1734176788259:beta_1_var
+1734176797108:beta_1_sd <- sqrt(beta_1_var)
+1734176799730:beta_1_sd
+1734176806785:beta_1_estimates
+1734176824725:beta_1 - 1.96*beta_1_sd
+1734176836365:(beta_1 - 1.96*beta_1_sd)
+1734176842944:beta_1_estimates < (beta_1 - 1.96*beta_1_sd)
+1734176847547:mean(beta_1_estimates < (beta_1 - 1.96*beta_1_sd))
+1734176921426:B1_var <- err_var / sum_sqrd_devs_x
+1734176921451:B1_sd <- sqrt(B1_var)
+1734176980606:knitr::opts_chunk$set(echo = TRUE)
+1734176980638:set.seed(123)
+1734176980750:# Initialize the population parameters and the simulation size
+1734176980780:beta_0 <- 10
+1734176980807:beta_1 <- 2
+1734176980845:err_var <- 4
+1734176980875:sim_size <- 10000
+1734176980908:n <- sim_size * 10
+1734176980939:# Initialize a vector with varying levels for the predictor
+1734176980983:x <- seq(from = 0, to = 90, by = 10)
+1734176981017:# Initialize a matrix to hold the outcomes for the simulations
+1734176981085:y <- matrix(
+1734176981109:data = rep(NA, times = length(x) * sim_size),
+1734176981145:nrow = length(x), ncol = sim_size
+1734176981177:)
+1734176981220:# During each simulation, for each level of the predictor, sample from the
+1734176981264:# conditional probability distribution of the response
+1734176981296:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734176981363:x[3]
+1734176981406:x[5]
+1734176981443:x_3_mean <- 50
+1734176981479:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734176981550:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734176981619:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734176981743:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734176981815:x_5_mean <- 90
+1734176981860:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734176981896:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734176981945:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734176982025:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734176982113:i_3_res <- y[3, ] - x_3_mean
+1734176982146:i_5_res <- y[5, ] - x_5_mean
+1734176982189:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734176982401:abline(h = 0, col = "red")
+1734176982444:abline(v = 0, col = "red")
+1734176982556:vars <- rep(NA, times = nrow(y))
+1734176982600:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734176982680:# First, calculate the mean of the conditional probability distributions of Y
+1734176982718:estimated_means <- beta_0 + beta_1 * x
+1734176982760:# Second, calculate the residuals
+1734176982789:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734176982829:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734176982860:mse <- sum(errors^2) / (n - 2)
+1734176982902:beta_0_estimates <- rep(NA, times = sim_size)
+1734176982931:beta_1_estimates <- rep(NA, times = sim_size)
+1734176982961:for (i in 1:sim_size) {
+1734176983033:fit <- glm(y[, i] ~ x, family = gaussian)
+1734176983079:beta_0_estimates[i] <- fit$coefficients[1]
+1734176983107:beta_1_estimates[i] <- fit$coefficients[2]
+1734176983191:}
+1734176988984:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734176989043:# First, we must obtain the sum of the squared deviations of the predictor
+1734176989080:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734176989114:B1_var <- err_var / sum_sqrd_devs_x
+1734176989158:B1_sd <- sqrt(B1_var)
+1734176989190:mean(beta_1_estimates < (beta_1 - 1.96*B1_sd))
+1734177833545:fit
+1734177836812:summary(fit)
+1734177859874:fit$model
+1734177948991:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734177949042:abline(v = 2, col = "red")
+1734178103217:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734178103248:abline(v = beta_1, col = "red")
+1734178103282:abline(v = beta_1 - 1.96*B1_sd, col = "blue")
+1734178103309:abline(v = beta_1 -+ 1.96*B1_sd, col = "blue")
+1734178106407:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734178106438:abline(v = beta_1, col = "red")
+1734178106484:abline(v = beta_1 - 1.96*B1_sd, col = "blue")
+1734178106521:abline(v = beta_1 + 1.96*B1_sd, col = "blue")
+1734178120756:hist(beta_1_estimates, breaks = 50, main = "Distribution of B1")
+1734178120792:abline(v = beta_1, col = "red")
+1734178120831:abline(v = beta_1 - 1.96*B1_sd, col = "blue")
+1734178120876:abline(v = beta_1 + 1.96*B1_sd, col = "blue")
+1734178120924:xlab("Point Estimate")
+1734178137458:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734178137486:abline(v = beta_1, col = "red")
+1734178137534:abline(v = beta_1 - 1.96*B1_sd, col = "blue")
+1734178137563:abline(v = beta_1 + 1.96*B1_sd, col = "blue")
+1734180257969:knitr::opts_chunk$set(echo = TRUE)
+1734180257974:set.seed(123)
+1734180257978:# Initialize the population parameters and the simulation size
+1734180257979:beta_0 <- 10
+1734180257979:beta_1 <- 2
+1734180257981:err_var <- 4
+1734180257982:sim_size <- 10000
+1734180257983:n <- sim_size * 10
+1734180257984:# Initialize a vector with varying levels for the predictor
+1734180257985:x <- seq(from = 0, to = 90, by = 10)
+1734180257987:# Initialize a matrix to hold the outcomes for the simulations
+1734180257987:y <- matrix(
+1734180257987:data = rep(NA, times = length(x) * sim_size),
+1734180257988:nrow = length(x), ncol = sim_size
+1734180257988:)
+1734180258087:# During each simulation, for each level of the predictor, sample from the
+1734180258119:# conditional probability distribution of the response
+1734180258154:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734180258208:x[3]
+1734180258236:x[5]
+1734180258281:x_3_mean <- 50
+1734180258314:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734180258355:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734180258413:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734180258498:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734180258572:x_5_mean <- 90
+1734180258601:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734180258644:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734180258675:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734180258759:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734180258830:i_3_res <- y[3, ] - x_3_mean
+1734180258861:i_5_res <- y[5, ] - x_5_mean
+1734180258903:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734180259164:abline(h = 0, col = "red")
+1734180259204:abline(v = 0, col = "red")
+1734180259297:vars <- rep(NA, times = nrow(y))
+1734180259363:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734180259409:# First, calculate the mean of the conditional probability distributions of Y
+1734180259464:estimated_means <- beta_0 + beta_1 * x
+1734180259497:# Second, calculate the residuals
+1734180259539:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734180259569:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734180259606:mse <- sum(errors^2) / (n - 2)
+1734180259649:beta_0_estimates <- rep(NA, times = sim_size)
+1734180259682:beta_1_estimates <- rep(NA, times = sim_size)
+1734180259730:for (i in 1:sim_size) {
+1734180259815:fit <- glm(y[, i] ~ x, family = gaussian)
+1734180259842:beta_0_estimates[i] <- fit$coefficients[1]
+1734180259875:beta_1_estimates[i] <- fit$coefficients[2]
+1734180259929:}
+1734180266323:# First, we must obtain the sum of the squared deviations of the predictor
+1734180266354:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734180266389:B1_var <- err_var / sum_sqrd_devs_x
+1734180266425:B1_se <- sqrt(B1_var)
+1734180266470:mean(beta_1_estimates < (beta_1 - 1.96*B1_se))
+1734180266519:mean(beta_1_estimates > (beta_1 + 1.96*B1_se))
+1734180266558:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734180266612:abline(v = beta_1, col = "red")
+1734180266649:abline(v = beta_1 - 1.96*B1_sd, col = "blue")
+1734180630184:# We standardize B1 to obtain the standardized statistics
+1734180630236:beta_1_estimates_standard <- (beta_1_estimates - beta_1) / B1_var
+1734180642890:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734180642931:abline(v = beta_1, col = "red")
+1734180642963:abline(v = beta_1 - 1.96*B1_se, col = "blue")
+1734180642997:abline(v = beta_1 + 1.96*B1_se, col = "blue")
+1734180676726:qqplot(beta_1_estimates)
+1734180688995:qqnorm(beta_1_estimates)
+1734180721965:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734180744914:qqnorm(beta_1_estimates_standard)
+1734181153723:anova(fit)["Residuals", "Mean sq"]
+1734181273151:fit$residuals
+1734181282882:crossprod(fit$residuals)
+1734181297691:fit$residuals^2
+1734181301159:sum(fit$residuals^2)
+1734181405097:res$df
+1734181409312:fit$df
+1734181452172:n
+1734181463447:length(fit$residuals)
+1734181466027:length(fit$residuals) - 2
+1734181620018:knitr::opts_chunk$set(echo = TRUE)
+1734181620027:set.seed(123)
+1734181620030:# Initialize the population parameters and the simulation size
+1734181620031:beta_0 <- 10
+1734181620032:beta_1 <- 2
+1734181620035:err_var <- 4
+1734181620037:sim_size <- 10000
+1734181620039:n <- sim_size * 10
+1734181620040:# Initialize a vector with varying levels for the predictor
+1734181620040:x <- seq(from = 0, to = 90, by = 10)
+1734181620042:# Initialize a matrix to hold the outcomes for the simulations
+1734181620043:y <- matrix(
+1734181620043:data = rep(NA, times = length(x) * sim_size),
+1734181620043:nrow = length(x), ncol = sim_size
+1734181620044:)
+1734181620159:# During each simulation, for each level of the predictor, sample from the
+1734181620192:# conditional probability distribution of the response
+1734181620242:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734181620322:x[3]
+1734181620394:x[5]
+1734181620432:x_3_mean <- 50
+1734181620676:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734181620706:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734181620747:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734181620871:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734181620971:x_5_mean <- 90
+1734181621003:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734181621042:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734181621074:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734181621174:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734181621270:i_3_res <- y[3, ] - x_3_mean
+1734181621304:i_5_res <- y[5, ] - x_5_mean
+1734181621337:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734181621554:abline(h = 0, col = "red")
+1734181621589:abline(v = 0, col = "red")
+1734181621685:vars <- rep(NA, times = nrow(y))
+1734181621738:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734181621803:# First, calculate the mean of the conditional probability distributions of Y
+1734181621835:estimated_means <- beta_0 + beta_1 * x
+1734181621873:# Second, calculate the residuals
+1734181621916:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734181621948:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734181621984:mse <- sum(errors^2) / (n - 2)
+1734181622026:beta_0_estimates <- rep(NA, times = sim_size)
+1734181622068:beta_1_estimates <- rep(NA, times = sim_size)
+1734181622112:mse_estimates <- rep(NA, times = sim_size)
+1734181622173:for (i in 1:sim_size) {
+1734181622228:fit <- glm(y[, i] ~ x, family = gaussian)
+1734181622270:beta_0_estimates[i] <- fit$coefficients[1]
+1734181622301:beta_1_estimates[i] <- fit$coefficients[2]
+1734181622338:mse_estimates <- crossproduct(fit$residuals) / (length(fit$residuals) - 2)
+1734181622411:}
+1734181661095:# We standardize B1 to obtain the standardized statistics
+1734181661128:beta_1_estimates_standard <- (beta_1_estimates - beta_1) / B1_var
+1734181662793:knitr::opts_chunk$set(echo = TRUE)
+1734181662822:set.seed(123)
+1734181662948:# Initialize the population parameters and the simulation size
+1734181662975:beta_0 <- 10
+1734181663004:beta_1 <- 2
+1734181663049:err_var <- 4
+1734181663079:sim_size <- 10000
+1734181663121:n <- sim_size * 10
+1734181663183:# Initialize a vector with varying levels for the predictor
+1734181663222:x <- seq(from = 0, to = 90, by = 10)
+1734181663278:# Initialize a matrix to hold the outcomes for the simulations
+1734181663319:y <- matrix(
+1734181663345:data = rep(NA, times = length(x) * sim_size),
+1734181663373:nrow = length(x), ncol = sim_size
+1734181663424:)
+1734181663456:# During each simulation, for each level of the predictor, sample from the
+1734181663495:# conditional probability distribution of the response
+1734181663538:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734181663597:x[3]
+1734181663632:x[5]
+1734181663678:x_3_mean <- 50
+1734181663719:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734181663754:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734181663809:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734181663891:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734181663963:x_5_mean <- 90
+1734181664005:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734181664035:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734181664066:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734181664156:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734181664219:i_3_res <- y[3, ] - x_3_mean
+1734181664255:i_5_res <- y[5, ] - x_5_mean
+1734181664298:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734181664530:abline(h = 0, col = "red")
+1734181664560:abline(v = 0, col = "red")
+1734181664667:vars <- rep(NA, times = nrow(y))
+1734181664742:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734181664784:# First, calculate the mean of the conditional probability distributions of Y
+1734181664816:estimated_means <- beta_0 + beta_1 * x
+1734181664855:# Second, calculate the residuals
+1734181664884:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734181664917:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734181664957:mse <- sum(errors^2) / (n - 2)
+1734181664991:beta_0_estimates <- rep(NA, times = sim_size)
+1734181665024:beta_1_estimates <- rep(NA, times = sim_size)
+1734181665067:mse_estimates <- rep(NA, times = sim_size)
+1734181665106:for (i in 1:sim_size) {
+1734181665177:fit <- glm(y[, i] ~ x, family = gaussian)
+1734181665215:beta_0_estimates[i] <- fit$coefficients[1]
+1734181665247:beta_1_estimates[i] <- fit$coefficients[2]
+1734181665284:mse_estimates <- crossproduct(fit$residuals) / (length(fit$residuals) - 2)
+1734181665355:}
+1734181666084:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734181685887:knitr::opts_chunk$set(echo = TRUE)
+1734181685897:set.seed(123)
+1734181685902:# Initialize the population parameters and the simulation size
+1734181685902:beta_0 <- 10
+1734181685903:beta_1 <- 2
+1734181685904:err_var <- 4
+1734181685905:sim_size <- 10000
+1734181685906:n <- sim_size * 10
+1734181685907:# Initialize a vector with varying levels for the predictor
+1734181685908:x <- seq(from = 0, to = 90, by = 10)
+1734181685909:# Initialize a matrix to hold the outcomes for the simulations
+1734181685910:y <- matrix(
+1734181685910:data = rep(NA, times = length(x) * sim_size),
+1734181685910:nrow = length(x), ncol = sim_size
+1734181685911:)
+1734181685965:# During each simulation, for each level of the predictor, sample from the
+1734181686066:# conditional probability distribution of the response
+1734181686110:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734181686189:x[3]
+1734181686222:x[5]
+1734181686258:x_3_mean <- 50
+1734181686288:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734181686328:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734181686387:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734181686478:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734181686558:x_5_mean <- 90
+1734181686588:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734181686622:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734181686669:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734181686770:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734181686847:i_3_res <- y[3, ] - x_3_mean
+1734181686891:i_5_res <- y[5, ] - x_5_mean
+1734181686922:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734181687172:abline(h = 0, col = "red")
+1734181687215:abline(v = 0, col = "red")
+1734181687329:vars <- rep(NA, times = nrow(y))
+1734181687402:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734181687472:# First, calculate the mean of the conditional probability distributions of Y
+1734181687500:estimated_means <- beta_0 + beta_1 * x
+1734181687531:# Second, calculate the residuals
+1734181687567:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734181687598:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734181687636:mse <- sum(errors^2) / (n - 2)
+1734181687685:beta_0_estimates <- rep(NA, times = sim_size)
+1734181687736:beta_1_estimates <- rep(NA, times = sim_size)
+1734181687802:mse_estimates <- rep(NA, times = sim_size)
+1734181687845:for (i in 1:sim_size) {
+1734181687924:fit <- glm(y[, i] ~ x, family = gaussian)
+1734181687957:beta_0_estimates[i] <- fit$coefficients[1]
+1734181688001:beta_1_estimates[i] <- fit$coefficients[2]
+1734181688031:mse_estimates <- crossproduct(fit$residuals) / (length(fit$residuals) - 2)
+1734181688105:}
+1734181688770:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734181711622:knitr::opts_chunk$set(echo = TRUE)
+1734181711658:set.seed(123)
+1734181711744:# Initialize the population parameters and the simulation size
+1734181711929:beta_0 <- 10
+1734181711955:beta_1 <- 2
+1734181711982:err_var <- 4
+1734181712012:sim_size <- 10000
+1734181712039:n <- sim_size * 10
+1734181712065:# Initialize a vector with varying levels for the predictor
+1734181712101:x <- seq(from = 0, to = 90, by = 10)
+1734181712135:# Initialize a matrix to hold the outcomes for the simulations
+1734181712174:y <- matrix(
+1734181712210:data = rep(NA, times = length(x) * sim_size),
+1734181712262:nrow = length(x), ncol = sim_size
+1734181712295:)
+1734181712350:# During each simulation, for each level of the predictor, sample from the
+1734181712410:# conditional probability distribution of the response
+1734181712452:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734181712525:x[3]
+1734181712564:x[5]
+1734181712599:x_3_mean <- 50
+1734181712644:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734181712693:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734181712744:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734181712847:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734181712928:x_5_mean <- 90
+1734181712976:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734181713019:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734181713064:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734181713152:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734181713220:i_3_res <- y[3, ] - x_3_mean
+1734181713264:i_5_res <- y[5, ] - x_5_mean
+1734181713298:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734181713549:abline(h = 0, col = "red")
+1734181713590:abline(v = 0, col = "red")
+1734181713684:vars <- rep(NA, times = nrow(y))
+1734181713725:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734181713788:# First, calculate the mean of the conditional probability distributions of Y
+1734181713824:estimated_means <- beta_0 + beta_1 * x
+1734181713866:# Second, calculate the residuals
+1734181713908:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734181713938:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734181713972:mse <- sum(errors^2) / (n - 2)
+1734181714015:beta_0_estimates <- rep(NA, times = sim_size)
+1734181714054:beta_1_estimates <- rep(NA, times = sim_size)
+1734181714084:mse_estimates <- rep(NA, times = sim_size)
+1734181714118:for (i in 1:sim_size) {
+1734181714195:fit <- glm(y[, i] ~ x, family = gaussian)
+1734181714234:beta_0_estimates[i] <- fit$coefficients[1]
+1734181714277:beta_1_estimates[i] <- fit$coefficients[2]
+1734181714313:mse_estimates <- crossprod(fit$residuals) / (length(fit$residuals) - 2)
+1734181714389:}
+1734181720245:# First, we must obtain the sum of the squared deviations of the predictor
+1734181720269:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734181720299:B1_var <- err_var / sum_sqrd_devs_x
+1734181720342:B1_se <- sqrt(B1_var)
+1734181720376:mean(beta_1_estimates < (beta_1 - 1.96*B1_se))
+1734181720405:mean(beta_1_estimates > (beta_1 + 1.96*B1_se))
+1734181720437:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734181720478:abline(v = beta_1, col = "red")
+1734181720509:abline(v = beta_1 - 1.96*B1_se, col = "blue")
+1734181720542:abline(v = beta_1 + 1.96*B1_se, col = "blue")
+1734181720631:qqnorm(beta_1_estimates)
+1734181720871:# We standardize B1 to obtain the standardized statistics
+1734181720902:beta_1_estimates_standard <- (beta_1_estimates - beta_1) / B1_var
+1734181720943:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734181721005:qqnorm(beta_1_estimates_standard)
+1734181802661:mse_estimats
+1734181804712:mse_estimates
+1734181825425:crossprod(fit$residuals)
+1734181835604:crossprod(fit$residuals) / 8
+1734181848324:knitr::opts_chunk$set(echo = TRUE)
+1734181848332:set.seed(123)
+1734181848335:# Initialize the population parameters and the simulation size
+1734181848336:beta_0 <- 10
+1734181848336:beta_1 <- 2
+1734181848339:err_var <- 4
+1734181848341:sim_size <- 10000
+1734181848342:n <- sim_size * 10
+1734181848343:# Initialize a vector with varying levels for the predictor
+1734181848344:x <- seq(from = 0, to = 90, by = 10)
+1734181848345:# Initialize a matrix to hold the outcomes for the simulations
+1734181848345:y <- matrix(
+1734181848346:data = rep(NA, times = length(x) * sim_size),
+1734181848346:nrow = length(x), ncol = sim_size
+1734181848346:)
+1734181848407:# During each simulation, for each level of the predictor, sample from the
+1734181848498:# conditional probability distribution of the response
+1734181848693:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734181848740:x[3]
+1734181848807:x[5]
+1734181848839:x_3_mean <- 50
+1734181848869:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734181848906:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734181848952:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734181849045:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734181849154:x_5_mean <- 90
+1734181849194:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734181849226:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734181849255:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734181849347:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734181849419:i_3_res <- y[3, ] - x_3_mean
+1734181849454:i_5_res <- y[5, ] - x_5_mean
+1734181849496:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734181849727:abline(h = 0, col = "red")
+1734181849757:abline(v = 0, col = "red")
+1734181849862:vars <- rep(NA, times = nrow(y))
+1734181849916:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734181849957:# First, calculate the mean of the conditional probability distributions of Y
+1734181850006:estimated_means <- beta_0 + beta_1 * x
+1734181850040:# Second, calculate the residuals
+1734181850072:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734181850119:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734181850151:mse <- sum(errors^2) / (n - 2)
+1734181850183:beta_0_estimates <- rep(NA, times = sim_size)
+1734181850249:beta_1_estimates <- rep(NA, times = sim_size)
+1734181850290:mse_estimates <- rep(NA, times = sim_size)
+1734181850331:for (i in 1:sim_size) {
+1734181850416:fit <- glm(y[, i] ~ x, family = gaussian)
+1734181850448:beta_0_estimates[i] <- fit$coefficients[1]
+1734181850488:beta_1_estimates[i] <- fit$coefficients[2]
+1734181850531:mse_estimates[i] <- crossprod(fit$residuals) / (10 - 2)
+1734181850590:}
+1734181856766:# First, we must obtain the sum of the squared deviations of the predictor
+1734181856795:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734181856828:B1_var <- err_var / sum_sqrd_devs_x
+1734181856859:B1_se <- sqrt(B1_var)
+1734181856911:mean(beta_1_estimates < (beta_1 - 1.96*B1_se))
+1734181856945:mean(beta_1_estimates > (beta_1 + 1.96*B1_se))
+1734181856976:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734181857018:abline(v = beta_1, col = "red")
+1734181857051:abline(v = beta_1 - 1.96*B1_se, col = "blue")
+1734181857085:abline(v = beta_1 + 1.96*B1_se, col = "blue")
+1734181857179:qqnorm(beta_1_estimates)
+1734181857489:# We standardize B1 to obtain the standardized statistics
+1734181857523:beta_1_estimates_standard <- (beta_1_estimates - beta_1) / B1_var
+1734181857566:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734181857637:qqnorm(beta_1_estimates_standard)
+1734181942264:# We studentize B1 to obtain the studentized statistics
+1734181942305:beta_1_estimates_student <- (beta_1_estimates - beta_1) / mse_estimates
+1734181951006:hist(beta_1_estimates_student, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734181969929:qqnorm(beta_1_estimates_student)
+1734182049089:qqplot.t(beta_1_estimates_student, dof = 8)
+1734182115940:install.packages("imenssp")
+1734182145257:install.packages("Imenssp")
+1734182265125:knitr::opts_chunk$set(echo = TRUE)
+1734182265161:set.seed(123)
+1734182265219:# Initialize the population parameters and the simulation size
+1734182265323:beta_0 <- 10
+1734182265359:beta_1 <- 2
+1734182265386:err_var <- 4
+1734182265421:sim_size <- 10000
+1734182265447:n <- sim_size * 10
+1734182265476:# Initialize a vector with varying levels for the predictor
+1734182265509:x <- seq(from = 0, to = 90, by = 10)
+1734182265536:# Initialize a matrix to hold the outcomes for the simulations
+1734182265562:y <- matrix(
+1734182265632:data = rep(NA, times = length(x) * sim_size),
+1734182265665:nrow = length(x), ncol = sim_size
+1734182265693:)
+1734182265735:# During each simulation, for each level of the predictor, sample from the
+1734182265761:# conditional probability distribution of the response
+1734182265790:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734182265862:x[3]
+1734182265893:x[5]
+1734182265945:x_3_mean <- 50
+1734182265987:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734182266016:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734182266047:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734182266134:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734182266195:x_5_mean <- 90
+1734182266243:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734182266274:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734182266313:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734182266400:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734182266461:i_3_res <- y[3, ] - x_3_mean
+1734182266494:i_5_res <- y[5, ] - x_5_mean
+1734182266540:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734182266769:abline(h = 0, col = "red")
+1734182266817:abline(v = 0, col = "red")
+1734182266916:vars <- rep(NA, times = nrow(y))
+1734182266954:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734182267005:# First, calculate the mean of the conditional probability distributions of Y
+1734182267042:estimated_means <- beta_0 + beta_1 * x
+1734182267071:# Second, calculate the residuals
+1734182267102:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734182267136:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734182267163:mse <- sum(errors^2) / (n - 2)
+1734182267195:beta_0_estimates <- rep(NA, times = sim_size)
+1734182267231:beta_1_estimates <- rep(NA, times = sim_size)
+1734182267260:mse_estimates <- rep(NA, times = sim_size)
+1734182267295:beta_1_var_estimates <- rep(NA, times = sim_size)
+1734182267337:for (i in 1:sim_size) {
+1734182267394:fit <- glm(y[, i] ~ x, family = gaussian)
+1734182267438:beta_0_estimates[i] <- fit$coefficients[1]
+1734182267475:beta_1_estimates[i] <- fit$coefficients[2]
+1734182267504:mse_estimates[i] <- crossprod(fit$residuals) / (10 - 2)
+1734182267544:beta_1_var_estimates[i] <- mse_estimates[i] / sum((x - mean(x))^2)
+1734182267598:}
+1734182273763:# First, we must obtain the sum of the squared deviations of the predictor
+1734182273791:sum_sqrd_devs_x <- sum((x - mean(x))^2)
+1734182273835:B1_var <- err_var / sum_sqrd_devs_x
+1734182273880:B1_se <- sqrt(B1_var)
+1734182273913:mean(beta_1_estimates < (beta_1 - 1.96*B1_se))
+1734182273943:mean(beta_1_estimates > (beta_1 + 1.96*B1_se))
+1734182273986:hist(beta_1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734182274019:abline(v = beta_1, col = "red")
+1734182274047:abline(v = beta_1 - 1.96*B1_se, col = "blue")
+1734182274086:abline(v = beta_1 + 1.96*B1_se, col = "blue")
+1734182274182:qqnorm(beta_1_estimates)
+1734182274429:# We standardize B1 to obtain the standardized statistics
+1734182274464:beta_1_estimates_standard <- (beta_1_estimates - beta_1) / B1_var
+1734182274524:hist(beta_1_estimates_standard, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734182274587:qqnorm(beta_1_estimates_standard)
+1734182274893:# We studentize B1 to obtain the studentized statistics
+1734182274926:beta_1_estimates_student <- (beta_1_estimates - beta_1) / beta_1_var_estimates
+1734182274961:hist(beta_1_estimates_student, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734182278466:qqnorm(beta_1_estimates_student)
+1734182347665:install.packages("limma")
+1734182500243:theoretical_quantiles <- qt(ppoints(100), df = 8)
+1734182503188:theoretical_quantiles
+1734182513176:theoretical_quantiles <- qt(ppoints(length(beta_1_var_estimates)), df = 8)
+1734182548603:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182563122:theoretical_quantiles <- qt(ppoints(length(beta_1_estimates_student)), df = 8)
+1734182564650:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182598865:theoretical_quantiles <- qnorm(ppoints(length(beta_1_estimates_standard)))
+1734182612775:qqplot(theoretical_quantiles, beta_1_estimates_standard)
+1734182666817:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182667057:abline(0, 1, col = "red")
+1734182685864:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182686068:abline(0, 1, col = "red")
+1734182686099:abline(coef = 1, col = "blue")
+1734182689566:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182689777:abline(0, 1, col = "red")
+1734182689806:abline(slope = 1, col = "blue")
+1734182728752:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182728953:abline(0, 1, col = "red")
+1734182728990:abline(a = 0, b = 1, col = "blue")
+1734182746946:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182747180:abline(0, 1, col = "red")
+1734182747217:abline(a = 1, b = 0, col = "blue")
+1734182751173:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182751401:abline(0, 1, col = "red")
+1734182751444:abline(a = 1, b = 1, col = "blue")
+1734182795341:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734182795572:abline(1, 2, col = "red")
+1734182805496:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734183267592:pred
+1734183269152:fit
+1734183279565:fit$fitted.values
+1734183286689:ncol[y]
+1734183289405:ncol(y)
+1734183294140:y[, 10000]
+1734183301515:y[, 10000] - fit$fitted.values
+1734183305921:fit$residuals
+1734183312601:(fit$residuals)^2
+1734183317199:sum((fit$residuals)^2)
+1734183321993:crossprod(fit$residuals)
+1734197169473:knitr::opts_chunk$set(echo = TRUE)
+1734197169665:set.seed(123)
+1734197169678:# Initialize the population parameters and the simulation size
+1734197169679:beta_0 <- 10
+1734197169683:beta_1 <- 2
+1734197169688:err_var <- 4
+1734197169695:sim_size <- 10000
+1734197169701:n <- sim_size * 10
+1734197169707:# Initialize a vector with varying levels for the predictor
+1734197169707:x <- seq(from = 0, to = 90, by = 10)
+1734197169713:# Initialize a matrix to hold the outcomes for the simulations
+1734197169714:y <- matrix(
+1734197169714:data = rep(NA, times = length(x) * sim_size),
+1734197169714:nrow = length(x), ncol = sim_size
+1734197169715:)
+1734197169760:# During each simulation, for each level of the predictor, sample from the
+1734197169802:# conditional probability distribution of the response
+1734197169843:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734197169972:x[3]
+1734197170016:x[5]
+1734197170067:x_3_mean <- 50
+1734197170120:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734197170166:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734197170209:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734197170327:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734197170440:x_5_mean <- 90
+1734197170521:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734197170556:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734197170603:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734197170696:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734197170775:i_3_res <- y[3, ] - x_3_mean
+1734197170821:i_5_res <- y[5, ] - x_5_mean
+1734197170860:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734197171092:abline(h = 0, col = "red")
+1734197171136:abline(v = 0, col = "red")
+1734197171235:vars <- rep(NA, times = nrow(y))
+1734197171290:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734197171343:# First, calculate the mean of the conditional probability distributions of Y
+1734197171376:estimated_means <- beta_0 + beta_1 * x
+1734197171425:# Second, calculate the residuals
+1734197171466:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734197171507:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734197171546:mse <- sum(errors^2) / (n - 2)
+1734197548954:x
+1734197551853:x - mean(x)
+1734197557915:(x - mean(x))^2
+1734197561513:sum((x - mean(x))^2)
+1734197654692:knitr::opts_chunk$set(echo = TRUE)
+1734197654700:set.seed(123)
+1734197654706:# Initialize the population parameters and the simulation size
+1734197654706:beta_0 <- 10
+1734197654711:beta_1 <- 2
+1734197654746:err_var <- 4
+1734197654805:sim_size <- 10000
+1734197654825:n <- sim_size * 10
+1734197654834:# Initialize a vector with varying levels for the predictor
+1734197654834:x <- seq(from = 0, to = 90, by = 10)
+1734197654843:# Initialize a matrix to hold the outcomes for the simulations
+1734197654844:y <- matrix(
+1734197654845:data = rep(NA, times = length(x) * sim_size),
+1734197654845:nrow = length(x), ncol = sim_size
+1734197654845:)
+1734197654905:# During each simulation, for each level of the predictor, sample from the
+1734197654957:# conditional probability distribution of the response
+1734197654992:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734197655092:x[3]
+1734197655165:x[5]
+1734197655211:x_3_mean <- 50
+1734197655277:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734197655352:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734197655403:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734197655559:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734197655663:x_5_mean <- 90
+1734197655711:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734197655759:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734197655810:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734197655904:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734197655981:i_3_res <- y[3, ] - x_3_mean
+1734197656025:i_5_res <- y[5, ] - x_5_mean
+1734197656074:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734197656296:abline(h = 0, col = "red")
+1734197656342:abline(v = 0, col = "red")
+1734197656458:vars <- rep(NA, times = nrow(y))
+1734197656519:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734197656579:# First, calculate the mean of the conditional probability distributions of Y
+1734197656623:estimated_means <- beta_0 + beta_1 * x
+1734197656674:# Second, calculate the residuals
+1734197656718:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734197656766:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734197656800:mse <- sum(errors^2) / (n - 2)
+1734197656862:slr_b1_estimates <- rep(NA, times = sim_size)
+1734197657017:slr_b0_estimates <- rep(NA, times = sim_size)
+1734197657057:slr_sse <- rep(NA, times = sim_size)
+1734197657099:slr_mse <- rep(NA, times = sim_size)
+1734197657148:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734197657185:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734197657225:for (i in 1:sim_size) {
+1734197657292:fit <- glm(y[, i] ~ x, family = gaussian)
+1734197657355:slr_beta_0_estimates[i] <- fit$coefficients[1]
+1734197657391:slr_beta_1_estimates[i] <- fit$coefficients[2]
+1734197657433:slr_sse[i] <- crossprod(fit$residuals)
+1734197657465:slr_mse[i] <- slr_sse[i] / (length(x) - 2)
+1734197657511:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734197657544:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734197657622:}
+1734197676080:knitr::opts_chunk$set(echo = TRUE)
+1734197676090:set.seed(123)
+1734197676096:# Initialize the population parameters and the simulation size
+1734197676096:beta_0 <- 10
+1734197676100:beta_1 <- 2
+1734197676105:err_var <- 4
+1734197676110:sim_size <- 10000
+1734197676115:n <- sim_size * 10
+1734197676119:# Initialize a vector with varying levels for the predictor
+1734197676120:x <- seq(from = 0, to = 90, by = 10)
+1734197676211:# Initialize a matrix to hold the outcomes for the simulations
+1734197676221:y <- matrix(
+1734197676222:data = rep(NA, times = length(x) * sim_size),
+1734197676223:nrow = length(x), ncol = sim_size
+1734197676224:)
+1734197676266:# During each simulation, for each level of the predictor, sample from the
+1734197676310:# conditional probability distribution of the response
+1734197676340:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734197676420:x[3]
+1734197676452:x[5]
+1734197676496:x_3_mean <- 50
+1734197676574:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734197676611:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734197676658:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734197676752:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734197676819:x_5_mean <- 90
+1734197676880:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734197676915:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734197676951:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734197677044:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734197677109:i_3_res <- y[3, ] - x_3_mean
+1734197677154:i_5_res <- y[5, ] - x_5_mean
+1734197677190:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734197677407:abline(h = 0, col = "red")
+1734197677452:abline(v = 0, col = "red")
+1734197677555:vars <- rep(NA, times = nrow(y))
+1734197677590:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734197677658:# First, calculate the mean of the conditional probability distributions of Y
+1734197677691:estimated_means <- beta_0 + beta_1 * x
+1734197677761:# Second, calculate the residuals
+1734197677807:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734197677844:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734197677874:mse <- sum(errors^2) / (n - 2)
+1734197677918:slr_b1_estimates <- rep(NA, times = sim_size)
+1734197677952:slr_b0_estimates <- rep(NA, times = sim_size)
+1734197677990:slr_sse <- rep(NA, times = sim_size)
+1734197678029:slr_mse <- rep(NA, times = sim_size)
+1734197678085:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734197678162:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734197678212:for (i in 1:sim_size) {
+1734197678294:fit <- glm(y[, i] ~ x, family = gaussian)
+1734197678376:slr_b0_estimates[i] <- fit$coefficients[1]
+1734197678406:slr_b1_estimates[i] <- fit$coefficients[2]
+1734197678439:slr_sse[i] <- crossprod(fit$residuals)
+1734197678487:slr_mse[i] <- slr_sse[i] / (length(x) - 2)
+1734197678515:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734197678548:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734197678633:}
+1734197719755:b1_var <- err_var / sum((x - mean(x))^2)
+1734197719789:b1_se <- sqrt(b1_var)
+1734197735998:mean(slr_b1_se_estimates < (beta_1 - 1.96*b1_se))
+1734197750766:knitr::opts_chunk$set(echo = TRUE)
+1734197750776:set.seed(123)
+1734197750782:# Initialize the population parameters and the simulation size
+1734197750782:beta_0 <- 10
+1734197750791:beta_1 <- 2
+1734197750796:err_var <- 4
+1734197750801:sim_size <- 10000
+1734197750805:n <- sim_size * 10
+1734197750894:# Initialize a vector with varying levels for the predictor
+1734197750899:x <- seq(from = 0, to = 90, by = 10)
+1734197750905:# Initialize a matrix to hold the outcomes for the simulations
+1734197750905:y <- matrix(
+1734197750906:data = rep(NA, times = length(x) * sim_size),
+1734197750906:nrow = length(x), ncol = sim_size
+1734197750907:)
+1734197750947:# During each simulation, for each level of the predictor, sample from the
+1734197750971:# conditional probability distribution of the response
+1734197751005:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(length(x), sd = sqrt(err_var))
+1734197751069:x[3]
+1734197751129:x[5]
+1734197751171:x_3_mean <- 50
+1734197751209:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734197751276:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734197751311:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734197751526:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734197751591:x_5_mean <- 90
+1734197751623:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734197751671:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734197751703:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734197751785:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734197751859:i_3_res <- y[3, ] - x_3_mean
+1734197751895:i_5_res <- y[5, ] - x_5_mean
+1734197751932:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734197752189:abline(h = 0, col = "red")
+1734197752223:abline(v = 0, col = "red")
+1734197752316:vars <- rep(NA, times = nrow(y))
+1734197752370:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734197752410:# First, calculate the mean of the conditional probability distributions of Y
+1734197752446:estimated_means <- beta_0 + beta_1 * x
+1734197752481:# Second, calculate the residuals
+1734197752507:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734197752576:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734197752603:mse <- sum(errors^2) / (n - 2)
+1734197752638:slr_b1_estimates <- rep(NA, times = sim_size)
+1734197752680:slr_b0_estimates <- rep(NA, times = sim_size)
+1734197752712:slr_sse <- rep(NA, times = sim_size)
+1734197752748:slr_mse <- rep(NA, times = sim_size)
+1734197752792:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734197752826:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734197752862:for (i in 1:sim_size) {
+1734197752915:fit <- glm(y[, i] ~ x, family = gaussian)
+1734197753006:slr_b0_estimates[i] <- fit$coefficients[1]
+1734197753034:slr_b1_estimates[i] <- fit$coefficients[2]
+1734197753070:slr_sse[i] <- crossprod(fit$residuals)
+1734197753098:slr_mse[i] <- slr_sse[i] / (length(x) - 2)
+1734197753126:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734197753159:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734197753214:}
+1734197758845:b1_var <- err_var / sum((x - mean(x))^2)
+1734197758877:b1_se <- sqrt(b1_var)
+1734197764941:mean(slr_b1_se_estimates < (beta_1 - 1.96*b1_se))
+1734197772042:b1_se
+1734197782830:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734197792387:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734197804600:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734197804661:abline(v = beta_1, col = "red")
+1734197804724:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734197804775:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734197811851:qqnorm(slr_b1_estimates)
+1734197853794:# We standardize B1 to obtain the standardized statistics
+1734197853822:slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+1734197860786:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734197868702:qqnorm(slr_b1_estimates_standardized)
+1734197901326:# We studentize B1 to obtain the studentized statistics
+1734197901354:slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+1734197906671:hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734197916524:qqnorm(slr_b1_estimates_studentized)
+1734197924883:theoretical_quantiles <- qt(ppoints(length(beta_1_estimates_student)), df = 8)
+1734197931999:theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+1734197933840:qqplot(theoretical_quantiles, beta_1_estimates_student)
+1734197940099:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734198027488:knitr::opts_chunk$set(echo = TRUE)
+1734198027497:set.seed(123)
+1734198028955:# Initialize the population parameters and the simulation size
+1734198028956:beta_0 <- 10
+1734198028960:beta_1 <- 2
+1734198028965:err_var <- 4
+1734198028977:n <- 10
+1734198028982:sim_size <- 10000
+1734198028987:# Initialize a vector with varying levels for the predictor
+1734198028987:x <- seq(from = 0, to = 90, by = 10)
+1734198028992:# Initialize a matrix to hold the outcomes for the simulations
+1734198028993:y <- matrix(
+1734198028993:data = rep(NA, times = length(x) * sim_size),
+1734198028994:nrow = length(x), ncol = sim_size
+1734198028994:)
+1734198046685:n
+1734198048197:length(x)
+1734198056921:?rnorm
+1734198062222:# During each simulation, for each level of the predictor, sample from the
+1734198062282:# conditional probability distribution of the response
+1734198062308:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734198091051:nrow(y)
+1734198097263:vars <- rep(NA, times = n
+1734198097291:for (i in 1:nrow(y)) vars[i] <- var(y[i, ])
+1734198102833:knitr::opts_chunk$set(echo = TRUE)
+1734198102844:set.seed(123)
+1734198102851:# Initialize the population parameters and the simulation size
+1734198102851:beta_0 <- 10
+1734198102859:beta_1 <- 2
+1734198102865:err_var <- 4
+1734198102873:n <- 10
+1734198102878:sim_size <- 10000
+1734198102913:# Initialize a vector with varying levels for the predictor
+1734198102913:x <- seq(from = 0, to = 90, by = 10)
+1734198102972:# Initialize a matrix to hold the outcomes for the simulations
+1734198102976:y <- matrix(
+1734198102977:data = rep(NA, times = length(x) * sim_size),
+1734198102977:nrow = length(x), ncol = sim_size
+1734198102977:)
+1734198103022:# During each simulation, for each level of the predictor, sample from the
+1734198103186:# conditional probability distribution of the response
+1734198103211:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734198103283:x[3]
+1734198103343:x[5]
+1734198103387:x_3_mean <- 50
+1734198103431:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734198103468:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734198103503:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734198103599:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734198103664:x_5_mean <- 90
+1734198103698:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734198103742:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734198103782:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734198103872:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734198103938:i_3_res <- y[3, ] - x_3_mean
+1734198103980:i_5_res <- y[5, ] - x_5_mean
+1734198104023:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734198104231:abline(h = 0, col = "red")
+1734198104263:abline(v = 0, col = "red")
+1734198115767:vars <- rep(NA, times = n)
+1734198115798:for (i in 1:n) vars[i] <- var(y[i, ])
+1734198136161:# First, calculate the mean of the conditional probability distributions of Y
+1734198136191:estimated_means <- beta_0 + beta_1 * x
+1734198136233:# Second, calculate the residuals
+1734198136261:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734198136294:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734198136326:mse <- sum(errors^2) / ((n * sim_size) - 2)
+1734198158073:slr_b1_estimates <- rep(NA, times = sim_size)
+1734198158129:slr_b0_estimates <- rep(NA, times = sim_size)
+1734198158161:slr_sse <- rep(NA, times = sim_size)
+1734198158195:slr_mse <- rep(NA, times = sim_size)
+1734198158235:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734198158267:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734198158301:for (i in 1:sim_size) {
+1734198158360:fit <- glm(y[, i] ~ x, family = gaussian)
+1734198158432:slr_b0_estimates[i] <- fit$coefficients[1]
+1734198158466:slr_b1_estimates[i] <- fit$coefficients[2]
+1734198158496:slr_sse[i] <- crossprod(fit$residuals)
+1734198158529:slr_mse[i] <- slr_sse[i] / (n - 2)
+1734198158559:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734198158590:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734198158649:}
+1734198187143:b1_var <- err_var / sum((x - mean(x))^2)
+1734198187181:b1_se <- sqrt(b1_var)
+1734198189175:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734198190387:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734198193659:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734198193695:abline(v = beta_1, col = "red")
+1734198193776:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734198193830:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734198211113:var(slr_b1_estimates)
+1734198219876:b1_var
+1734198267306:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734198298225:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734198301807:knitr::opts_chunk$set(echo = TRUE)
+1734198301842:set.seed(123)
+1734198301935:# Initialize the population parameters and the simulation size
+1734198301961:beta_0 <- 10
+1734198301993:beta_1 <- 2
+1734198302046:err_var <- 4
+1734198302081:n <- 10
+1734198302141:sim_size <- 10000
+1734198302183:# Initialize a vector with varying levels for the predictor
+1734198302216:x <- seq(from = 0, to = 90, by = 10)
+1734198302259:# Initialize a matrix to hold the outcomes for the simulations
+1734198302290:y <- matrix(
+1734198302328:data = rep(NA, times = length(x) * sim_size),
+1734198302354:nrow = length(x), ncol = sim_size
+1734198302382:)
+1734198302445:# During each simulation, for each level of the predictor, sample from the
+1734198302472:# conditional probability distribution of the response
+1734198302510:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734198302693:x[3]
+1734198302722:x[5]
+1734198302771:x_3_mean <- 50
+1734198302808:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734198302846:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734198302888:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734198302969:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734198303033:x_5_mean <- 90
+1734198303070:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734198303104:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734198303138:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734198303251:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734198303316:i_3_res <- y[3, ] - x_3_mean
+1734198303360:i_5_res <- y[5, ] - x_5_mean
+1734198303404:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734198303608:abline(h = 0, col = "red")
+1734198303647:abline(v = 0, col = "red")
+1734198303764:vars <- rep(NA, times = n)
+1734198303807:for (i in 1:n) vars[i] <- var(y[i, ])
+1734198303866:# First, calculate the mean of the conditional probability distributions of Y
+1734198303894:estimated_means <- beta_0 + beta_1 * x
+1734198303945:# Second, calculate the residuals
+1734198303982:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734198304019:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734198304057:mse <- sum(errors^2) / ((n * sim_size) - 2)
+1734198304097:slr_b1_estimates <- rep(NA, times = sim_size)
+1734198304147:slr_b0_estimates <- rep(NA, times = sim_size)
+1734198304179:slr_sse <- rep(NA, times = sim_size)
+1734198304210:slr_mse <- rep(NA, times = sim_size)
+1734198304274:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734198304303:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734198304337:for (i in 1:sim_size) {
+1734198304395:fit <- glm(y[, i] ~ x, family = gaussian)
+1734198304452:slr_b0_estimates[i] <- fit$coefficients[1]
+1734198304480:slr_b1_estimates[i] <- fit$coefficients[2]
+1734198304506:slr_sse[i] <- crossprod(fit$residuals)
+1734198304545:slr_mse[i] <- slr_sse[i] / (n - 2)
+1734198304578:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734198304611:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734198304716:}
+1734198312643:b1_var <- err_var / sum((x - mean(x))^2)
+1734198312674:b1_se <- sqrt(b1_var)
+1734198312720:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734198312760:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734198312810:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734198312858:abline(v = beta_1, col = "red")
+1734198312897:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734198312942:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734198313019:qqnorm(slr_b1_estimates)
+1734198313250:# We standardize B1 to obtain the standardized statistics
+1734198313280:slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+1734198313315:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734198313382:qqnorm(slr_b1_estimates_standardized)
+1734198313628:# We studentize B1 to obtain the studentized statistics
+1734198313654:slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+1734198313696:hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734198313761:qqnorm(slr_b1_estimates_studentized)
+1734198314012:theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+1734198314059:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734198401263:qt(.05/2, df = n - 2)
+1734198411207:qt(1 - .05/2, df = n - 2)
+1734198439770:?alpha
+1734198444151:alpha <- 0.05
+1734198446812:alpha / 2
+1734198452305:fjks;
+1734198454313:alpha
+1734198456591:alpha / 2
+1734198467760:alpha
+1734198470073:alpha / 2
+1734198471212:n
+1734198473224:n - 2
+1734199043512:qt(1 - alpha/2, df = n - 2)
+1734199138800:# Calculate the lower and upper limits for the confidence intervals
+1734199138829:slr_b1_estimates
+1734199148437:# Calculate the lower and upper limits for the confidence intervals
+1734199148467:slr_b1_se_estimates
+1734199167412:# Calculate the lower and upper limits for the confidence intervals
+1734199167439:slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199210827:# Calculate the lower and upper limits for the confidence intervals
+1734199210850:slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199210895:slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199280377:slr_b1_estimates > slr_b1_ci_lower_bounds
+1734199302859:(slr_b1_estimates > slr_b1_ci_lower_bounds) & (slr_b1_estimates < slr_b1_ci_upper_bounds)
+1734199305847:(slr_b1_estimates > slr_b1_ci_lower_bounds) & (slr_b1_estimates < slr_b1_ci_upper_bounds)
+1734199312627:mean((slr_b1_estimates > slr_b1_ci_lower_bounds) & (slr_b1_estimates < slr_b1_ci_upper_bounds))
+1734199365730:# Calculate the lower and upper limits for the confidence intervals
+1734199365756:slr_b1_ci_lower_bounds <- slr_b1_estimates_studentized - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199365786:slr_b1_ci_upper_bounds <- slr_b1_estimates_studentized + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199371050:mean((slr_b1_estimates_studentized > slr_b1_ci_lower_bounds) & (slr_b1_estimates_studentized < slr_b1_ci_upper_bounds))
+1734199436228:slr_b1_estimates - qt(1 - 0.05/2, df = n - 2) * slr_b1_se_estimates
+1734199458009:mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+1734199472809:# Calculate the lower and upper limits for the confidence intervals
+1734199472840:slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199472870:slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734199476012:mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+1734199557414:54825/23
+1734199677138:summary(fit)
+1734199715689:fit$residuals
+1734199721724:crossprod(fit$residuals)
+1734199725479:crossprod(fit$residuals) / (n - 2)
+1734199739589:(crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2)
+1734199746989:sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+1734199805023:1.99020 / 0.01504
+1734199947570:crossprod(fit$residuals)
+1734199953418:crossprod(fit$residuals) / (n - 2)
+1734199966191:(crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2)
+1734199970231:sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+1734200060995:qt(1 - 0.05/2; 23)
+1734200067635:qt(1 - 0.05/2, df = 23)
+1734200888299:bookdown::render_book()
+1734201349740:beta_0
+1734201354262:knitr::opts_chunk$set(echo = TRUE)
+1734201354444:set.seed(123)
+1734201354479:# Initialize the population parameters and the simulation size
+1734201354480:beta_0 <- 10
+1734201354481:beta_1 <- 2
+1734201354485:err_var <- 4
+1734201354529:n <- 10
+1734201354532:sim_size <- 10000
+1734201354534:# Initialize a vector with varying levels for the predictor
+1734201354534:x <- seq(from = 0, to = 90, by = 10)
+1734201354537:# Initialize a matrix to hold the outcomes for the simulations
+1734201354538:y <- matrix(
+1734201354538:data = rep(NA, times = length(x) * sim_size),
+1734201354539:nrow = length(x), ncol = sim_size
+1734201354539:)
+1734201354544:# During each simulation, for each level of the predictor, sample from the
+1734201354545:# conditional probability distribution of the response
+1734201354546:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734201354602:x[3]
+1734201354603:x[5]
+1734201354606:x_3_mean <- 50
+1734201354607:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734201354609:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734201354611:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734201354666:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734201354746:x_5_mean <- 90
+1734201354748:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734201354751:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734201354754:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734201354808:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734201354846:i_3_res <- y[3, ] - x_3_mean
+1734201354850:i_5_res <- y[5, ] - x_5_mean
+1734201354852:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734201355041:abline(h = 0, col = "red")
+1734201355042:abline(v = 0, col = "red")
+1734201355101:vars <- rep(NA, times = n)
+1734201355103:for (i in 1:n) vars[i] <- var(y[i, ])
+1734201355109:# First, calculate the mean of the conditional probability distributions of Y
+1734201355110:estimated_means <- beta_0 + beta_1 * x
+1734201355111:# Second, calculate the residuals
+1734201355112:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734201355114:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734201355114:mse <- sum(errors^2) / ((n * sim_size) - 2)
+1734201355120:slr_b1_estimates <- rep(NA, times = sim_size)
+1734201355123:slr_b0_estimates <- rep(NA, times = sim_size)
+1734201355125:slr_sse <- rep(NA, times = sim_size)
+1734201355126:slr_mse <- rep(NA, times = sim_size)
+1734201355127:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734201355128:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734201355130:for (i in 1:sim_size) {
+1734201355131:fit <- glm(y[, i] ~ x, family = gaussian)
+1734201355131:slr_b0_estimates[i] <- fit$coefficients[1]
+1734201355131:slr_b1_estimates[i] <- fit$coefficients[2]
+1734201355132:slr_sse[i] <- crossprod(fit$residuals)
+1734201355132:slr_mse[i] <- slr_sse[i] / (n - 2)
+1734201355132:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734201355133:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734201355133:}
+1734201361581:b1_var <- err_var / sum((x - mean(x))^2)
+1734201361583:b1_se <- sqrt(b1_var)
+1734201361586:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734201361589:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734201361592:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734201361598:abline(v = beta_1, col = "red")
+1734201361599:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734201361600:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734201361644:qqnorm(slr_b1_estimates)
+1734201361853:# We standardize B1 to obtain the standardized statistics
+1734201361853:slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+1734201361858:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734201361893:qqnorm(slr_b1_estimates_standardized)
+1734201362096:# We studentize B1 to obtain the studentized statistics
+1734201362097:slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+1734201362101:hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734201362132:qqnorm(slr_b1_estimates_studentized)
+1734201362337:theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+1734201362346:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734201362542:# Calculate the lower and upper limits for the confidence intervals
+1734201362543:slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734201362545:slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734201362550:mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+1734201362554:summary(fit)
+1734201362565:sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+1734201364523:beta_0
+1734201365977:beta_1
+1734201451472:hist(slr_b0_estimates, breaks = 50)
+1734201466096:abline(v = beta_0, col = "red")
+1734201467236:hist(slr_b0_estimates, breaks = 50)
+1734201467240:abline(v = beta_0, col = "red")
+1734201487308:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0")
+1734201487314:abline(v = beta_0, col = "red")
+1734201495674:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+1734201495681:abline(v = beta_0, col = "red")
+1734201882596:err_var
+1734201916806:n
+1734201926866:mean(x)
+1734201930623:mean(x)^2
+1734201947651:x - mean(x)
+1734201949033:x - mean(x)
+1734201953539:(x - mean(x))
+1734201956469:(x - mean(x))^2
+1734201960839:sum((x - mean(x))^2)
+1734201997789:1/10 + 2025 / 8250
+1734202018850:(1/10 + 2025 / 8250) * 4
+1734202085332:b1_var
+1734202132874:b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+1734202136689:b0_var
+1734202146112:b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+1734202146114:b0_se <- sqrt(b0_var)
+1734202220347:var(slr_b0_estimates)
+1734202729012:knitr::opts_chunk$set(echo = TRUE)
+1734202729019:options(scipen = 999)
+1734202729021:set.seed(123)
+1734202729024:# Initialize the population parameters and the simulation size
+1734202729024:beta_0 <- 10
+1734202729024:beta_1 <- 2
+1734202729026:err_var <- 4
+1734202729027:n <- 10
+1734202729028:sim_size <- 10000
+1734202729029:# Initialize a vector with varying levels for the predictor
+1734202729029:x <- seq(from = 0, to = 90, by = 10)
+1734202729031:# Initialize a matrix to hold the outcomes for the simulations
+1734202729031:y <- matrix(
+1734202729031:data = rep(NA, times = length(x) * sim_size),
+1734202729032:nrow = length(x), ncol = sim_size
+1734202729032:)
+1734202729035:# During each simulation, for each level of the predictor, sample from the
+1734202729036:# conditional probability distribution of the response
+1734202729036:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734202729194:x[3]
+1734202729195:x[5]
+1734202729198:x_3_mean <- 50
+1734202729200:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734202729203:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734202729206:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734202729259:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734202729292:x_5_mean <- 90
+1734202729295:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734202729299:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734202729301:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734202729354:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734202729389:i_3_res <- y[3, ] - x_3_mean
+1734202729393:i_5_res <- y[5, ] - x_5_mean
+1734202729396:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734202729601:abline(h = 0, col = "red")
+1734202729602:abline(v = 0, col = "red")
+1734202729667:vars <- rep(NA, times = n)
+1734202729668:for (i in 1:n) vars[i] <- var(y[i, ])
+1734202729676:# First, calculate the mean of the conditional probability distributions of Y
+1734202729677:estimated_means <- beta_0 + beta_1 * x
+1734202729678:# Second, calculate the residuals
+1734202729678:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734202729680:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734202729680:mse <- sum(errors^2) / ((n * sim_size) - 2)
+1734202729684:slr_b1_estimates <- rep(NA, times = sim_size)
+1734202729686:slr_b0_estimates <- rep(NA, times = sim_size)
+1734202729687:slr_sse <- rep(NA, times = sim_size)
+1734202729688:slr_mse <- rep(NA, times = sim_size)
+1734202729690:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734202729691:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734202729692:slr_b0_var_estimates <- rep(NA, times = sim_size)
+1734202729694:slr_b0_se_estimates <- rep(NA, times = sim_size)
+1734202729696:for (i in 1:sim_size) {
+1734202729697:fit <- glm(y[, i] ~ x, family = gaussian)
+1734202729698:slr_b0_estimates[i] <- fit$coefficients[1]
+1734202729698:slr_b1_estimates[i] <- fit$coefficients[2]
+1734202729699:slr_sse[i] <- crossprod(fit$residuals)
+1734202729700:slr_mse[i] <- slr_sse[i] / (n - 2)
+1734202729700:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734202729701:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734202729701:slr_b0_var_estimates[i] <- slr_mse[i] * (1/n + mean(x)^2/sum((x - mean(x))^2))
+1734202729702:slr_b0_se_estimates[i] <- sqrt(slr_b0_var_estimates[i])
+1734202729702:}
+1734202736002:b1_var <- err_var / sum((x - mean(x))^2)
+1734202736006:b1_se <- sqrt(b1_var)
+1734202736012:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734202736015:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734202736018:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734202736022:abline(v = beta_1, col = "red")
+1734202736023:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734202736024:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734202736067:qqnorm(slr_b1_estimates)
+1734202736293:# We standardize B1 to obtain the standardized statistics
+1734202736295:slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+1734202736301:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734202736333:qqnorm(slr_b1_estimates_standardized)
+1734202736534:# We studentize B1 to obtain the studentized statistics
+1734202736534:slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+1734202736539:hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734202736574:qqnorm(slr_b1_estimates_studentized)
+1734202736775:theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+1734202736784:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734202736983:# Calculate the lower and upper limits for the confidence intervals
+1734202736983:slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734202736985:slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734202736989:mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+1734202736992:summary(fit)
+1734202737001:sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+1734202737004:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+1734202737009:abline(v = beta_0, col = "red")
+1734202737055:b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+1734202737057:b0_se <- sqrt(b0_var)
+1734203274311:hist(slr_b0_estimates, main = "Sampling Distribution of B0", xlab = "B0")
+1734203279941:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+1734203346591:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203346593:qqplot(theoretical_quantiles, slr_b0_estimates)
+1734203494245:b0_se
+1734203535481:slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+1734203573601:slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+1734203573607:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203573610:qqplot(theoretical_quantiles, slr_b0_estimates_standardized)
+1734203613253:slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+1734203613256:hist(slr_b0_estimates_standardized, breaks = 50, main = "Distribution of Standardized B0")
+1734203618521:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203618525:qqplot(theoretical_quantiles, slr_b0_estimates_standardized)
+1734203718117:(slr_b0_estimates - beta_0) / slr_b0_se_estimates
+1734203750105:slr_b0_estimates_studentized <- (slr_b0_estimates - beta_0) / slr_b0_se_estimates
+1734203750109:hist(slr_b0_estimates_studentized, breaks = 50, main = "Distribution of Studentized B0")
+1734203784431:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203784434:qqplot(theoretical_quantiles, slr_b0_estimates, main = "QQ for Sampling Distribution of B0")
+1734203790887:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203790891:qqplot(theoretical_quantiles, slr_b0_estimates, main = "Normal QQ for Sampling Distribution of B0")
+1734203810324:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203810326:qqplot(theoretical_quantiles, slr_b0_estimates_standardized, main = "Normal QQ for Studentized B0")
+1734203851695:theoretical_quantiles <- qnorm(sim_size)
+1734203851698:qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
+1734203871237:knitr::opts_chunk$set(echo = TRUE)
+1734203871245:options(scipen = 999)
+1734203871247:set.seed(123)
+1734203871250:# Initialize the population parameters and the simulation size
+1734203871251:beta_0 <- 10
+1734203871251:beta_1 <- 2
+1734203871254:err_var <- 4
+1734203871256:n <- 10
+1734203871258:sim_size <- 10000
+1734203871260:# Initialize a vector with varying levels for the predictor
+1734203871260:x <- seq(from = 0, to = 90, by = 10)
+1734203871262:# Initialize a matrix to hold the outcomes for the simulations
+1734203871262:y <- matrix(
+1734203871263:data = rep(NA, times = length(x) * sim_size),
+1734203871263:nrow = length(x), ncol = sim_size
+1734203871263:)
+1734203871267:# During each simulation, for each level of the predictor, sample from the
+1734203871268:# conditional probability distribution of the response
+1734203871268:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734203871321:x[3]
+1734203871322:x[5]
+1734203871379:x_3_mean <- 50
+1734203871385:x_3 <- seq(from = 40, to = 60, length = 1000)
+1734203871387:y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+1734203871389:plot(x_3, y_3, xlab = "Y3", ylab = "")
+1734203871474:hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+1734203871507:x_5_mean <- 90
+1734203871509:x_5 <- seq(from = 80, to = 100, length = 1000)
+1734203871512:y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+1734203871514:plot(x_5, y_5, xlab = "Y5", ylab = "")
+1734203871564:hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+1734203871594:i_3_res <- y[3, ] - x_3_mean
+1734203871597:i_5_res <- y[5, ] - x_5_mean
+1734203871599:plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+1734203871806:abline(h = 0, col = "red")
+1734203871808:abline(v = 0, col = "red")
+1734203871870:vars <- rep(NA, times = n)
+1734203871873:for (i in 1:n) vars[i] <- var(y[i, ])
+1734203871882:# First, calculate the mean of the conditional probability distributions of Y
+1734203871883:estimated_means <- beta_0 + beta_1 * x
+1734203871885:# Second, calculate the residuals
+1734203871885:errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+1734203871888:# Third, sum the squared errors and divide by the appropriate degress of freedom
+1734203871888:mse <- sum(errors^2) / ((n * sim_size) - 2)
+1734203871892:slr_b1_estimates <- rep(NA, times = sim_size)
+1734203871894:slr_b0_estimates <- rep(NA, times = sim_size)
+1734203871896:slr_sse <- rep(NA, times = sim_size)
+1734203871899:slr_mse <- rep(NA, times = sim_size)
+1734203871901:slr_b1_var_estimates <- rep(NA, times = sim_size)
+1734203871902:slr_b1_se_estimates <- rep(NA, times = sim_size)
+1734203871904:slr_b0_var_estimates <- rep(NA, times = sim_size)
+1734203871906:slr_b0_se_estimates <- rep(NA, times = sim_size)
+1734203871908:for (i in 1:sim_size) {
+1734203871909:fit <- glm(y[, i] ~ x, family = gaussian)
+1734203871910:slr_b0_estimates[i] <- fit$coefficients[1]
+1734203871910:slr_b1_estimates[i] <- fit$coefficients[2]
+1734203871911:slr_sse[i] <- crossprod(fit$residuals)
+1734203871911:slr_mse[i] <- slr_sse[i] / (n - 2)
+1734203871912:slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+1734203871912:slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+1734203871913:slr_b0_var_estimates[i] <- slr_mse[i] * (1/n + mean(x)^2/sum((x - mean(x))^2))
+1734203871913:slr_b0_se_estimates[i] <- sqrt(slr_b0_var_estimates[i])
+1734203871914:}
+1734203877650:b1_var <- err_var / sum((x - mean(x))^2)
+1734203877654:b1_se <- sqrt(b1_var)
+1734203877658:mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+1734203877661:mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+1734203877663:hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+1734203877669:abline(v = beta_1, col = "red")
+1734203877670:abline(v = beta_1 - 1.96*b1_se, col = "blue")
+1734203877670:abline(v = beta_1 + 1.96*b1_se, col = "blue")
+1734203877714:qqnorm(slr_b1_estimates)
+1734203877911:# We standardize B1 to obtain the standardized statistics
+1734203877912:slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+1734203877916:hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+1734203877948:qqnorm(slr_b1_estimates_standardized)
+1734203878152:# We studentize B1 to obtain the studentized statistics
+1734203878154:slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+1734203878161:hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+1734203878197:qqnorm(slr_b1_estimates_studentized)
+1734203878400:theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+1734203878411:qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+1734203878609:# Calculate the lower and upper limits for the confidence intervals
+1734203878610:slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734203878614:slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+1734203878622:mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+1734203878625:summary(fit)
+1734203878634:sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+1734203878638:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+1734203878642:abline(v = beta_0, col = "red")
+1734203878688:b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+1734203878690:b0_se <- sqrt(b0_var)
+1734203878693:hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+1734203878723:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203878725:qqplot(theoretical_quantiles, slr_b0_estimates, main = "Normal QQ for Sampling Distribution of B0")
+1734203878932:slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+1734203878936:hist(slr_b0_estimates_standardized, breaks = 50, main = "Distribution of Standardized B0")
+1734203878972:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203878976:qqplot(theoretical_quantiles, slr_b0_estimates_standardized, main = "Normal QQ for Studentized B0")
+1734203879192:slr_b0_estimates_studentized <- (slr_b0_estimates - beta_0) / slr_b0_se_estimates
+1734203879195:hist(slr_b0_estimates_studentized, breaks = 50, main = "Distribution of Studentized B0")
+1734203891243:length(slr_b0_estimates_studentized
+1734203892945:)
+1734203903234:length(slr_b0_estimates_studentized) == sim_size
+1734203909844:theoretical_quantiles <- qnorm(ppoints(sim_size))
+1734203909848:qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
+1734203970261:theoretical_quantiles <- qt(ppoints(sim_size), df = n - 2)
+1734203970267:qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "t QQ for Studentized B0")

@@ -1,0 +1,40 @@
+git status
+[?2004lOn branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	[31m.config/[m
+	[31m.local/[m
+	[31mslr_01.Rmd[m
+	[31mslr_01.pdf[m
+
+nothing added to commit but untracked files present (use "git add" to track)
+]0;~[?2004hrstudio@7ce1c63d21a2:~$ git add slr_01.Rmd 
+[?2004l]0;~[?2004hrstudio@7ce1c63d21a2:~$ git p[Kcommit -m "Add notebook"
+[?2004lAuthor identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'rstudio@7ce1c63d21a2.(none)')
+]0;~[?2004hrstudio@7ce1c63d21a2:~$ git config --global user.email "frederick.debaene@hotmail.com"
+[?2004l]0;~[?2004hrstudio@7ce1c63d21a2:~$ git config --global user.name "fre"
+[?2004l]0;~[?2004hrstudio@7ce1c63d21a2:~$ git[K[K[Kgit config --global user.name "fre"email "frederick.debaene@hotmail.com"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[34Pmmit -m "Add notebook"
+[?2004l[main edbeec0] Add notebook
+ 1 file changed, 290 insertions(+)
+ create mode 100644 slr_01.Rmd
+]0;~[?2004hrstudio@7ce1c63d21a2:~$ git ps[Kush
+[?2004lUsername for 'https://github.com': fredebaene
+Password for 'https://fredebaene@github.com': 
+remote: Support for password authentication was removed on August 13, 2021.
+remote: Please see https://docs.github.com/get-started/getting-started-with-git/about-remote-repositories#cloning-with-https-urls for information on currently recommended modes of authentication.
+fatal: Authentication failed for 'https://github.com/fredebaene/stats.git/'
+]0;~[?2004hrstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ [Krstudio@7ce1c63d21a2:~$ 

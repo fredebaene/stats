@@ -1,0 +1,1 @@
+"0","theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)"

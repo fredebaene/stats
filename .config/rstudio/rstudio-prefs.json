@@ -1,0 +1,34 @@
+{
+    "initial_working_directory": "~",
+    "panes": {
+        "quadrants": [
+            "TabSet2",
+            "TabSet1",
+            "Source",
+            "Console"
+        ],
+        "tabSet1": [
+            "Environment",
+            "History",
+            "Connections",
+            "Build",
+            "VCS",
+            "Tutorial",
+            "Presentation"
+        ],
+        "tabSet2": [
+            "Files",
+            "Plots",
+            "Packages",
+            "Help",
+            "Viewer",
+            "Presentations"
+        ],
+        "hiddenTabSet": [],
+        "console_left_on_top": false,
+        "console_right_on_top": false,
+        "additional_source_columns": 0
+    },
+    "posix_terminal_shell": "bash",
+    "default_project_location": "~"
+}

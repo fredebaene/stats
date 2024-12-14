@@ -1,0 +1,3 @@
+"0","i_3_res <- y[3, ] - x_3_mean"
+"0","i_5_res <- y[5, ] - x_5_mean"
+"0","plot(i_3_res, i_5_res, xlab = ""Residuals (i = 3)"", ylab = ""Residuals (i = 5)"")"

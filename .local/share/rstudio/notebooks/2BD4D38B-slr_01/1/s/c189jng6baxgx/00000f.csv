@@ -1,0 +1,8 @@
+"0","# First, calculate the mean of the conditional probability distributions of Y"
+"0","estimated_means <- beta_0 + beta_1 * x"
+"0",""
+"0","# Second, calculate the residuals"
+"0","errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = ""-"")"
+"0",""
+"0","# Third, sum the squared errors and divide by the appropriate degress of freedom"
+"0","mse <- sum(errors^2) / ((n * sim_size) - 2)"

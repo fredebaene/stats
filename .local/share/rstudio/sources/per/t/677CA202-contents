@@ -16,11 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r echo = FALSE}
-options(scipen = 999)
-```
-
-
-```{r echo = FALSE}
 set.seed(123)
 ```
 
@@ -279,7 +274,7 @@ $$
 where $\beta_0$ and $\beta_1$ are unknown population parameters, $x_i$ are known constants, 
 and $\epsilon_i \sim \mathcal{N}(0, \sigma^2)$.
 
-## Inferences Concerning $\beta_1$
+## $\beta_1$
 
 Drawing inferences on $\beta_1$ comprises either interval estimation or hypothesis testing of the form:
 
@@ -312,8 +307,6 @@ slr_sse <- rep(NA, times = sim_size)
 slr_mse <- rep(NA, times = sim_size)
 slr_b1_var_estimates <- rep(NA, times = sim_size)
 slr_b1_se_estimates <- rep(NA, times = sim_size)
-slr_b0_var_estimates <- rep(NA, times = sim_size)
-slr_b0_se_estimates <- rep(NA, times = sim_size)
 
 for (i in 1:sim_size) {
   
@@ -321,15 +314,10 @@ for (i in 1:sim_size) {
   
   slr_b0_estimates[i] <- fit$coefficients[1]
   slr_b1_estimates[i] <- fit$coefficients[2]
-  
   slr_sse[i] <- crossprod(fit$residuals)
   slr_mse[i] <- slr_sse[i] / (n - 2)
-  
   slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
   slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
-  
-  slr_b0_var_estimates[i] <- slr_mse[i] * (1/n + mean(x)^2/sum((x - mean(x))^2))
-  slr_b0_se_estimates[i] <- sqrt(slr_b0_var_estimates[i])
   
 }
 ```
@@ -362,7 +350,7 @@ b1_se <- sqrt(b1_var)
 
 We obtain a variance for $B1$ of $Var(B1) = `r round(b1_var, 3)`$, which gives us a 
 standard error for $B1$ of $SE(B1) = `r round(b1_se, 3)`$. Let us verify. Approximately 2.5% 
-of the point estimates for $\beta_1$ must be less than $2 - 1.96 \times `r round(b1_se, 3)`$ and 
+of the point estimates for $\beta_1$ must be less than $2 - 1.96 \times `r round(B1_se, 3)`$ and 
 2.5% of the point estimates must be greater than $2 + 1.96 \times `r round(b1_se, 3)`$
 
 ```{r}
@@ -490,136 +478,8 @@ Let's calculate it using the actual data:
 sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
 ```
 
-## Inferences Concerning $\beta_0$
 
-We can now draw the same inferences concerning $\beta_0$. Remember that we drew `r sim_size` random 
-samples under the following simple linear regression model:
 
-$$
-Y_i = 10 + 2 x_i + \epsilon_i
-$$
-
-### Point Estimator
-
-The estimator $B0$ can be used to obtain a point estimate for $\beta_0$:
-
-$$
-B_0 = \bar{Y} - B_1 \bar{X}
-$$
-
-### Sampling Distribution
-
-Using the estimator $B0$, we obtained a point estimate of $\beta_0$ for every sample. Using these 
-point estimates, we construct the following sampling distribution of $B0$:
-
-```{r echo = FALSE}
-hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
-abline(v = beta_0, col = "red")
-```
-
-The sampling distribution of $B0$ follows a normal distribution. The mean equals the true 
-parameter value $\beta_0 = `r beta_0`$. The latter implies $E(B0) = \beta_0$. The variance 
-of the sampling distribution is calculated as follows:
-
-$$
-\sigma^2(B0) = \sigma^2 [ \frac{1}{n} + \frac{\bar{x}^2}{\sum (x - \bar{x})^2} ]
-$$
-
-We can actually calculate the variance of the sampling distribution of $B0$:
-
-```{r echo = FALSE}
-b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
-b0_se <- sqrt(b0_var)
-```
-
-$$
-\begin{aligned}
-\sigma^2(B0) &= 4 \times [ 1 / 10 + 2025 / 8250 ] \\
-&= 4 \times 0.345 \\
-&= 1.38
-\end{aligned}
-$$
-
-A variance of the sampling distribution of $B0$ of `r round(b0_var, 2)` gives us a 
-standard error of the sampling distribution of `r round(b0_se, 2)`. If we calculate the 
-variance of the obtained point estimates, we get `r round(var(slr_b0_estimates), 3)`, which 
-approximately equals the variance of the sampling distribution.
-
-If we standardize $B0$, we obtain the following statistic, which follows a standard normal 
-distribution:
-
-$$
-\frac{B0 - \beta_0}{\sigma(B0)} \sim \mathcal{N}(0, 1)
-$$
-
-However, in practice, we do not know the true variance of the errors $\sigma^2$. Therefore, we must 
-use the estimator MSE to estimate the variance and, consequently, the standard error of the sampling 
-distribution of $B0$:
-
-$$
-s^2(B0) = MSE [ \frac{1}{n} + \frac{\bar{x}^2}{\sum (x - \bar{x})^2} ]
-$$
-
-If we then use the estimated standard error of the sampling distribution, $s(B0)$, then 
-we obtain the following studentized statistic:
-
-$$
-\frac{B0 - \beta_0}{s(B0)} \sim t(n - 2)
-$$
-
-### Verify Distributions
-
-The sampling distribution of $B_0$ follows a normal distribution:
-
-$$
-B_0 \sim \mathcal{N}(\beta_0, \sigma^2(B_0))
-$$
-
-```{r echo = FALSE}
-hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
-```
-
-```{r echo = FALSE}
-theoretical_quantiles <- qnorm(ppoints(sim_size))
-qqplot(theoretical_quantiles, slr_b0_estimates, main = "Normal QQ for Sampling Distribution of B0")
-```
-
-The standardized statistic follows a standard normal distribution:
-
-$$
-\frac{B_0 - \beta_0}{\sigma(B_0)} \sim \mathcal{N}(0, 1)
-$$
-
-```{r echo = FALSE}
-slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
-hist(slr_b0_estimates_standardized, breaks = 50, main = "Distribution of Standardized B0")
-```
-
-```{r echo = FALSE}
-theoretical_quantiles <- qnorm(ppoints(sim_size))
-qqplot(theoretical_quantiles, slr_b0_estimates_standardized, main = "Normal QQ for Studentized B0")
-```
-
-The studentized statistic follows a _t_-distribution with $n - 2$ degrees of freedom:
-
-$$
-\frac{B_0 - \beta_0}{s(B_0)} \sim t(n - 2)
-$$
-
-```{r echo = FALSE}
-slr_b0_estimates_studentized <- (slr_b0_estimates - beta_0) / slr_b0_se_estimates
-hist(slr_b0_estimates_studentized, breaks = 50, main = "Distribution of Studentized B0")
-```
-
-```{r echo = FALSE}
-theoretical_quantiles <- qnorm(ppoints(sim_size))
-qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
-```
-
-```{r echo = FALSE}
-theoretical_quantiles <- qt(ppoints(sim_size), df = n - 2)
-qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "t QQ for Studentized B0")
-```
 
 
 

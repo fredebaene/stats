@@ -1,0 +1,4 @@
+"0","x_3_mean <- 50"
+"0","x_3 <- seq(from = 40, to = 60, length = 1000)"
+"0","y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))"
+"0","plot(x_3, y_3, xlab = ""Y3"", ylab = """")"

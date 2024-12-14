@@ -1,0 +1,2 @@
+"0","vars <- rep(NA, times = n)"
+"0","for (i in 1:n) vars[i] <- var(y[i, ])"

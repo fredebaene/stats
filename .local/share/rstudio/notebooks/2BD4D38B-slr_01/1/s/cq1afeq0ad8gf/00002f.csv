@@ -1,0 +1,4 @@
+"0","x_5_mean <- 90"
+"0","x_5 <- seq(from = 80, to = 100, length = 1000)"
+"0","y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))"
+"0","plot(x_5, y_5, xlab = ""Y5"", ylab = """")"

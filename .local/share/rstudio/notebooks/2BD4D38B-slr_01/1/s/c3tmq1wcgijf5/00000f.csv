@@ -1,0 +1,3 @@
+"0","# Calculate the lower and upper limits for the confidence intervals"
+"0","slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)"
+"0","slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)"
