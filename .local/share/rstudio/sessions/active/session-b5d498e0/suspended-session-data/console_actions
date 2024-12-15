@@ -1,0 +1,38 @@
+{
+    "type": [
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+    ],
+    "data": [
+        "> ",
+        "length(slr_b0_estimates_studentized",
+        "+ ",
+        ")",
+        "[1] 10000\n",
+        "> ",
+        "length(slr_b0_estimates_studentized) == sim_size",
+        "[1] TRUE\n",
+        "> ",
+        "theoretical_quantiles <- qnorm(ppoints(sim_size))",
+        "> ",
+        "qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = \"Normal QQ for Studentized B0\")",
+        "> ",
+        "theoretical_quantiles <- qt(ppoints(sim_size), df = n - 2)",
+        "> ",
+        "qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = \"t QQ for Studentized B0\")"
+    ]
+}

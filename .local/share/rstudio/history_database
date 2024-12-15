@@ -1569,3 +1569,462 @@
 1734203909848:qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
 1734203970261:theoretical_quantiles <- qt(ppoints(sim_size), df = n - 2)
 1734203970267:qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "t QQ for Studentized B0")
+1734253095579:knitr::opts_chunk$set(echo = TRUE)
+1734253095777:options(scipen = 999)
+1734253095831:set.seed(123)
+1734253096858:# Initialize the population parameters and the simulation size
+1734253096859:beta_0 <- 10
+1734253096863:beta_1 <- 2
+1734253096868:err_var <- 4
+1734253096872:n <- 10
+1734253096876:sim_size <- 20
+1734253096881:# Initialize a vector with varying levels for the predictor
+1734253096881:x <- seq(from = 0, to = 90, by = 10)
+1734253096887:# Initialize a matrix to hold the outcomes for the simulations
+1734253096887:y <- matrix(
+1734253096887:data = rep(NA, times = length(x) * sim_size),
+1734253096887:nrow = length(x), ncol = sim_size
+1734253096888:)
+1734253098417:# During each simulation, for each level of the predictor, sample from the
+1734253098418:# conditional probability distribution of the response
+1734253098418:for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734253100889:View(y)
+1734253126731:# Create a data frame with the final data
+1734253126732:rep(x, times = 2)
+1734253135133:# Create a data frame with the final data
+1734253135133:rep(x, times = sim_size)
+1734253175826:knitr::opts_chunk$set(echo = TRUE)
+1734253175833:options(scipen = 999)
+1734253175839:set.seed(123)
+1734253175849:# Initialize the population parameters and the simulation size
+1734253175850:beta_0 <- 10
+1734253175854:beta_1 <- 2
+1734253175859:err_var <- 4
+1734253175891:n <- 10
+1734253175951:sim_size <- 20
+1734253175962:# Initialize a vector with varying levels for the predictor
+1734253175963:x <- seq(from = 0, to = 90, by = 10)
+1734253175971:# Initialize a matrix to hold the outcomes for the simulations
+1734253175972:y_matrix <- matrix(
+1734253175972:data = rep(NA, times = length(x) * sim_size),
+1734253175973:nrow = length(x), ncol = sim_size
+1734253175973:)
+1734253175982:# During each simulation, for each level of the predictor, sample from the
+1734253175983:# conditional probability distribution of the response
+1734253175983:for (i in 1:sim_size) y_matrix[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+1734253232108:knitr::opts_chunk$set(echo = TRUE)
+1734253232118:options(scipen = 999)
+1734253232124:set.seed(123)
+1734253232134:# Initialize the population parameters and the simulation size
+1734253232134:beta_0 <- 10
+1734253232138:beta_1 <- 2
+1734253232144:err_var <- 4
+1734253232266:n <- 10
+1734253232273:sim_size <- 20
+1734253232279:# Initialize a vector with varying levels for the predictor
+1734253232280:x <- seq(from = 0, to = 90, by = 10)
+1734253233320:# During each simulation, for each level of the predictor, sample from the
+1734253233321:# conditional probability distribution of the response
+1734253233321:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734253246392:# During each simulation, for each level of the predictor, sample from the
+1734253246393:# conditional probability distribution of the response
+1734253246394:y <- c()
+1734253246401:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734253246410:# Initialize a vector with all x values
+1734253246411:x <- rep(x, times = sim_size)
+1734253252114:y
+1734253539162:stem(x)
+1734253552414:stem(x, scale = 3)
+1734253558611:boxplot(x)
+1734253592726:boxplot(x)
+1734253599972:stem(x)
+1734253606884:boxplot(x)
+1734253619943:dotchart(x)
+1734253630458:```{r echo = FALSE}
+1734253631875:dotchart(x)
+1734254138651:# Fit a simple linear regression model to the data
+1734254138655:fit <- glm(y ~ x, family = gaussian)
+1734254215000:fit$residuals
+1734254265273:mean(fit$residuals)
+1734254271205:round(mean(fit$residuals), 5)
+1734255049643:fit$residuals
+1734255053250:fit$residuals^2
+1734255060783:sum(fit$residuals^2)
+1734255068164:sum(fit$residuals^2) == crossprod(fit$residuals)
+1734255110445:sse <- sum(fit$residuals^2)
+1734255110455:mse <- sse / (length(x) - 2)
+1734255114203:mse
+1734255116153:err_var
+1734256957103:knitr::opts_chunk$set(echo = TRUE)
+1734256957112:options(scipen = 999)
+1734256957118:set.seed(123)
+1734256957125:# Initialize the population parameters and the simulation size
+1734256957125:beta_0 <- 10
+1734256957130:beta_1 <- 2
+1734256957135:err_var <- 4
+1734256957140:n <- 10
+1734256957242:sim_size <- 20
+1734256957276:# Initialize a vector with varying levels for the predictor
+1734256957277:x <- seq(from = 0, to = 90, by = 10)
+1734256957292:# During each simulation, for each level of the predictor, sample from the
+1734256957294:# conditional probability distribution of the response
+1734256957295:y <- c()
+1734256957307:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734256957321:# Initialize a data frame with the data for the model that holds
+1734256957322:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734256957331:# We will create a second set of data where there is a departure from the normality
+1734256957332:# of the regression function
+1734256957333:y <- c()
+1734256957338:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(err_var)))
+1734256957348:# Initialize a data frame with the data for the model that holds
+1734256957349:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734256957360:# Fit a simple linear regression model to the data
+1734256957361:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734256957369:# Fit a simple linear regression model to the data
+1734256957370:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734256957378:boxplot(x)
+1734256957411:stem(x)
+1734256957420:dotchart(x)
+1734256966385:mean(fit$residuals)
+1734256972491:mean(fit_nl$residuals)
+1734256978195:round(mean(fit_nl$residuals), 5)
+1734257298968:plot(dat$x, dat$y)
+1734257317494:plot(fit$residuals, dat$x)
+1734257337433:plot(dat$x, fit$residuals)
+1734257358142:plot(fit$fitted.values, fit$residuals)
+1734257422461:plot(dat$x, fit$residuals)
+1734257422478:abline(h = 0, col = "red")
+1734257457115:plot(fit$fitted.values, fit$residuals)
+1734257457131:abline(h = 0, col = "red")
+1734257484465:plot(dat_nl$x, dat_nl$y)
+1734257497382:nrow(dat_nl)
+1734257517708:plot(dat_nl$x, fit_nl$residuals)
+1734257530071:length(fit_n$residuals)
+1734257533902:length(fit_nl$residuals)
+1734257545177:plot(dat_nl$x, fit_nl$residuals)
+1734257545192:abline(h = 0, col = "red")
+1734257556143:View(dat_nl)
+1734257724318:knitr::opts_chunk$set(echo = TRUE)
+1734257724329:options(scipen = 999)
+1734257724336:set.seed(123)
+1734257724343:# Initialize the population parameters and the simulation size
+1734257724343:beta_0 <- 10
+1734257724350:beta_1 <- 2
+1734257724358:err_var <- 4
+1734257724391:n <- 10
+1734257724453:sim_size <- 20
+1734257724491:# Initialize a vector with varying levels for the predictor
+1734257724492:x <- seq(from = 0, to = 90, by = 10)
+1734257724508:# During each simulation, for each level of the predictor, sample from the
+1734257724508:# conditional probability distribution of the response
+1734257724509:y <- c()
+1734257724519:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734257724531:# Initialize a data frame with the data for the model that holds
+1734257724532:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734257724544:# We will create a second set of data where there is a departure from the normality
+1734257724545:# of the regression function
+1734257724546:y <- c()
+1734257724552:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+1734257724565:# Initialize a data frame with the data for the model that holds
+1734257724566:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734257724578:# Fit a simple linear regression model to the data
+1734257724579:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734257724589:# Fit a simple linear regression model to the data
+1734257724591:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734257724600:boxplot(x)
+1734257724635:stem(x)
+1734257724647:dotchart(x)
+1734257724682:round(mean(fit$residuals), 5)
+1734257724691:round(mean(fit_nl$residuals), 5)
+1734257724703:sse <- sum(fit$residuals^2)
+1734257724710:mse <- sse / (length(x) - 2)
+1734257724721:plot(dat$x, dat$y)
+1734257724787:plot(dat$x, fit$residuals)
+1734257724800:abline(h = 0, col = "red")
+1734257724868:plot(fit$fitted.values, fit$residuals)
+1734257724903:abline(h = 0, col = "red")
+1734257724972:plot(dat_nl$x, dat_nl$y)
+1734257725018:plot(dat_nl$x, fit_nl$residuals)
+1734257725031:abline(h = 0, col = "red")
+1734257766596:plot(fit_nl$fitted_values, fit_nl$residuals)
+1734257781459:fit_nl$fitted.values
+1734257789782:plot(fit_nl$fitted.values, fit_nl$residuals)
+1734257789798:abline(v = 2, col = "red")
+1734258347515:knitr::opts_chunk$set(echo = TRUE)
+1734258347526:options(scipen = 999)
+1734258347537:set.seed(123)
+1734258347545:# Initialize the population parameters and the simulation size
+1734258347545:beta_0 <- 10
+1734258347550:beta_1 <- 2
+1734258347555:err_var <- 4
+1734258347589:n <- 10
+1734258347597:sim_size <- 20
+1734258347655:# Initialize a vector with varying levels for the predictor
+1734258347693:x <- seq(from = 0, to = 90, by = 10)
+1734258347710:# During each simulation, for each level of the predictor, sample from the
+1734258347710:# conditional probability distribution of the response
+1734258347711:y <- c()
+1734258347736:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734258347749:# Initialize a data frame with the data for the model that holds
+1734258347750:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734258347761:# We will create a second set of data where there is a departure from the normality
+1734258347761:# of the regression function
+1734258347762:y <- c()
+1734258347769:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+1734258347786:# Initialize a data frame with the data for the model that holds
+1734258347787:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734258347800:# We will create a third set of data where there is a departure from the contancy
+1734258347800:# of the variance
+1734258347801:y <- c()
+1734258347808:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = ((x + 10) / 10) * sqrt(err_var)))
+1734258347820:# Initialize a data frame with the data for the model that holds
+1734258347821:dat_hs <- data.frame(x = rep(x, times = sim_size), y = y)
+1734258347832:# Fit a simple linear regression model to the data
+1734258347833:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734258347844:# Fit a simple linear regression model to the data
+1734258347844:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734258347855:# Fit a simple linear regression model to the data
+1734258347855:fit_hs <- glm(y ~ x, family = gaussian, data = dat_hs)
+1734258347866:boxplot(x)
+1734258347908:stem(x)
+1734258347921:dotchart(x)
+1734258347956:round(mean(fit$residuals), 5)
+1734258347964:round(mean(fit_nl$residuals), 5)
+1734258348409:round(mean(fit_hs$residuals), 5)
+1734258358541:plot(dat$x, dat$y)
+1734258361994:plot(dat$x, fit$residuals)
+1734258362005:abline(h = 0, col = "red")
+1734258367357:plot(fit$fitted.values, fit$residuals)
+1734258367374:abline(h = 0, col = "red")
+1734258371283:plot(dat_nl$x, dat_nl$y)
+1734258373793:plot(dat_nl$x, fit_nl$residuals)
+1734258373806:abline(h = 0, col = "red")
+1734258376188:plot(fit_nl$fitted.values, fit_nl$residuals)
+1734258376203:abline(h = 2, col = "red")
+1734258391034:plot(dat_hs$x, dat_hs$y)
+1734258411548:plot(dat_hs$x, fit_hs$residuals)
+1734258411564:abline(h = 0, col = "red")
+1734258442168:abline(h = 0, col = "red")
+1734258443775:plot(fit_hs$fitted.values, fit_hs$residuals)
+1734258443817:abline(h = 0, col = "red")
+1734258628763:plot(dat$x, fit$residuals^2)
+1734258679577:plot(dat$x, fit$residuals^2)
+1734258695721:plot(dat_nl$x, fit_nl$residuals^2)
+1734258735840:plot(dat_hs$x, fit_hs$residuals^2)
+1734259170155:knitr::opts_chunk$set(echo = TRUE)
+1734259170162:options(scipen = 999)
+1734259170171:set.seed(123)
+1734259170179:# Initialize the population parameters and the simulation size
+1734259170179:beta_0 <- 10
+1734259170185:beta_1 <- 2
+1734259170194:err_var <- 4
+1734259170230:n <- 10
+1734259170290:sim_size <- 20
+1734259170297:# Initialize a vector with varying levels for the predictor
+1734259170298:x <- seq(from = 0, to = 90, by = 10)
+1734259170307:# During each simulation, for each level of the predictor, sample from the
+1734259170308:# conditional probability distribution of the response
+1734259170309:y <- c()
+1734259170314:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734259170325:# Initialize a data frame with the data for the model that holds
+1734259170325:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734259170335:# We will create a second set of data where there is a departure from the normality
+1734259170335:# of the regression function
+1734259170335:y <- c()
+1734259170341:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+1734259170350:# Initialize a data frame with the data for the model that holds
+1734259170351:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734259170359:# We will create a third set of data where there is a departure from the contancy
+1734259170359:# of the variance
+1734259170359:y <- c()
+1734259170371:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = ((x + 10) / 10) * sqrt(err_var)))
+1734259170383:# Initialize a data frame with the data for the model that holds
+1734259170384:dat_hs <- data.frame(x = rep(x, times = sim_size), y = y)
+1734259170394:# Fit a simple linear regression model to the data
+1734259170394:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734259170405:# Fit a simple linear regression model to the data
+1734259170406:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734259170421:# Fit a simple linear regression model to the data
+1734259170422:fit_hs <- glm(y ~ x, family = gaussian, data = dat_hs)
+1734259170441:boxplot(x)
+1734259170480:stem(x)
+1734259170489:dotchart(x)
+1734259170524:round(mean(fit$residuals), 5)
+1734259170531:round(mean(fit_nl$residuals), 5)
+1734259170539:round(mean(fit_hs$residuals), 5)
+1734259170547:sse <- sum(fit$residuals^2)
+1734259170553:mse <- sse / (length(x) - 2)
+1734259170559:sse_nl <- sum(fit_nl$residuals^2)
+1734259170565:mse_nl <- sse_nl / (length(x) - 2)
+1734259170571:sse_hs <- sum(fit_hs$residuals^2)
+1734259170577:mse_hs <- sse_nl / (length(x) - 2)
+1734259170588:plot(dat$x, dat$y)
+1734259170651:plot(dat$x, fit$residuals)
+1734259170664:abline(h = 0, col = "red")
+1734259170731:plot(fit$fitted.values, fit$residuals)
+1734259170746:abline(h = 0, col = "red")
+1734259170814:plot(dat_nl$x, dat_nl$y)
+1734259170858:plot(dat_nl$x, fit_nl$residuals)
+1734259170871:abline(h = 0, col = "red")
+1734259170926:plot(fit_nl$fitted.values, fit_nl$residuals)
+1734259170939:abline(h = 2, col = "red")
+1734259170993:plot(dat_hs$x, dat_hs$y)
+1734259171036:plot(dat_hs$x, fit_hs$residuals)
+1734259171050:abline(h = 0, col = "red")
+1734259171110:plot(fit_hs$fitted.values, fit_hs$residuals)
+1734259171123:abline(h = 0, col = "red")
+1734259171188:plot(dat$x, fit$residuals^2)
+1734259171235:plot(dat_nl$x, fit_nl$residuals^2)
+1734259171280:plot(dat_hs$x, fit_hs$residuals^2)
+1734259260596:fit$residuals
+1734259266767:fit$residuals / sqrt(mse)
+1734259306189:semistudent_residuals <- fit$residuals / sqrt(mse)
+1734259306199:semistudent_residuals_nl <- fit_nl$residuals / sqrt(mse_nl)
+1734259306204:semistudent_residuals_hs <- fit_hs$residuals / sqrt(mse_hs)
+1734259318812:plot(dat$x, semistudent_residuals)
+1734259338067:plot(dat_nl$x, semistudent_residuals_nl)
+1734259352114:plot(dat_hs$x, semistudent_residuals_hs)
+1734260283505:knitr::opts_chunk$set(echo = TRUE)
+1734260283517:options(scipen = 999)
+1734260283528:set.seed(123)
+1734260283536:# Initialize the population parameters and the simulation size
+1734260283536:beta_0 <- 10
+1734260283540:beta_1 <- 2
+1734260283577:err_var <- 4
+1734260283637:n <- 10
+1734260283681:sim_size <- 20
+1734260283691:# Initialize a vector with varying levels for the predictor
+1734260283692:x <- seq(from = 0, to = 90, by = 10)
+1734260283702:# During each simulation, for each level of the predictor, sample from the
+1734260283703:# conditional probability distribution of the response
+1734260283703:y <- c()
+1734260283708:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734260283722:# Initialize a data frame with the data for the model that holds
+1734260283723:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260283732:# We will create a second set of data where there is a departure from the normality
+1734260283733:# of the regression function
+1734260283733:y <- c()
+1734260283740:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+1734260283752:# Initialize a data frame with the data for the model that holds
+1734260283752:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260283762:# We will create a third set of data where there is a departure from the contancy
+1734260283763:# of the variance
+1734260283763:y <- c()
+1734260283770:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = ((x + 10) / 10) * sqrt(err_var)))
+1734260283782:# Initialize a data frame with the data for the model that holds
+1734260283782:dat_hs <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260283803:# We will create a fourth set of data where there is a departure from the normality
+1734260283803:# of the rror terms
+1734260283804:y <- c()
+1734260283809:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))^2)
+1734260283821:# Initialize a data frame with the data for the model that holds
+1734260283821:dat_nn <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260283831:# Fit a simple linear regression model to the data
+1734260283832:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734260283842:# Fit a simple linear regression model to the data
+1734260283843:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734260283852:# Fit a simple linear regression model to the data
+1734260283853:fit_hs <- glm(y ~ x, family = gaussian, data = dat_hs)
+1734260284266:# Fit a simple linear regression model to the data
+1734260284266:fit_nn <- glm(y ~ x, family = gaussian, data = dat_nn)
+1734260299998:round(mean(fit_nn$residuals), 5)
+1734260345259:plot(dat_nn$x, dat_nn$y)
+1734260358527:plot(dat_nn$x, fit_nn$residuals)
+1734260368410:plot(dat_nn$x, fit_nn$residuals)
+1734260368424:abline(h = 0, col = "red")
+1734260448249:plot(dat_nn$x, fit_nn$residuals^2)
+1734260461923:semistudent_residuals <- fit$residuals / sqrt(mse)
+1734260467083:knitr::opts_chunk$set(echo = TRUE)
+1734260467094:options(scipen = 999)
+1734260467101:set.seed(123)
+1734260467108:# Initialize the population parameters and the simulation size
+1734260467108:beta_0 <- 10
+1734260467112:beta_1 <- 2
+1734260467118:err_var <- 4
+1734260467123:n <- 10
+1734260467159:sim_size <- 20
+1734260467223:# Initialize a vector with varying levels for the predictor
+1734260467258:x <- seq(from = 0, to = 90, by = 10)
+1734260467271:# During each simulation, for each level of the predictor, sample from the
+1734260467271:# conditional probability distribution of the response
+1734260467272:y <- c()
+1734260467278:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+1734260467294:# Initialize a data frame with the data for the model that holds
+1734260467294:dat <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260467304:# We will create a second set of data where there is a departure from the normality
+1734260467304:# of the regression function
+1734260467305:y <- c()
+1734260467312:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+1734260467323:# Initialize a data frame with the data for the model that holds
+1734260467324:dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260467346:# We will create a third set of data where there is a departure from the contancy
+1734260467346:# of the variance
+1734260467347:y <- c()
+1734260467352:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = ((x + 10) / 10) * sqrt(err_var)))
+1734260467363:# Initialize a data frame with the data for the model that holds
+1734260467364:dat_hs <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260467373:# We will create a fourth set of data where there is a departure from the normality
+1734260467373:# of the rror terms
+1734260467374:y <- c()
+1734260467379:for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))^2)
+1734260467388:# Initialize a data frame with the data for the model that holds
+1734260467388:dat_nn <- data.frame(x = rep(x, times = sim_size), y = y)
+1734260467397:# Fit a simple linear regression model to the data
+1734260467398:fit <- glm(y ~ x, family = gaussian, data = dat)
+1734260467406:# Fit a simple linear regression model to the data
+1734260467406:fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+1734260467415:# Fit a simple linear regression model to the data
+1734260467415:fit_hs <- glm(y ~ x, family = gaussian, data = dat_hs)
+1734260467423:# Fit a simple linear regression model to the data
+1734260467424:fit_nn <- glm(y ~ x, family = gaussian, data = dat_nn)
+1734260467432:boxplot(x)
+1734260467463:stem(x)
+1734260467472:dotchart(x)
+1734260467505:round(mean(fit$residuals), 5)
+1734260467513:round(mean(fit_nl$residuals), 5)
+1734260467521:round(mean(fit_hs$residuals), 5)
+1734260467528:round(mean(fit_nn$residuals), 5)
+1734260467535:sse <- sum(fit$residuals^2)
+1734260467542:mse <- sse / (length(x) - 2)
+1734260467547:sse_nl <- sum(fit_nl$residuals^2)
+1734260467553:mse_nl <- sse_nl / (length(x) - 2)
+1734260467559:sse_hs <- sum(fit_hs$residuals^2)
+1734260467564:mse_hs <- sse_nl / (length(x) - 2)
+1734260467570:sse_nn <- sum(fit_nn$residuals^2)
+1734260467575:mse_nn <- sse_nn / (length(x) - 2)
+1734260467583:plot(dat$x, dat$y)
+1734260467620:plot(dat$x, fit$residuals)
+1734260467632:abline(h = 0, col = "red")
+1734260467721:plot(fit$fitted.values, fit$residuals)
+1734260467732:abline(h = 0, col = "red")
+1734260467789:plot(dat_nl$x, dat_nl$y)
+1734260467832:plot(dat_nl$x, fit_nl$residuals)
+1734260467848:abline(h = 0, col = "red")
+1734260467904:plot(fit_nl$fitted.values, fit_nl$residuals)
+1734260467916:abline(h = 2, col = "red")
+1734260467974:plot(dat_hs$x, dat_hs$y)
+1734260468031:plot(dat_hs$x, fit_hs$residuals)
+1734260468049:abline(h = 0, col = "red")
+1734260468108:plot(fit_hs$fitted.values, fit_hs$residuals)
+1734260468120:abline(h = 0, col = "red")
+1734260468183:plot(dat_nn$x, dat_nn$y)
+1734260468226:plot(dat_nn$x, fit_nn$residuals)
+1734260468241:abline(h = 0, col = "red")
+1734260468301:plot(fit_nn$fitted.values, fit_nn$residuals)
+1734260468314:abline(h = 0, col = "red")
+1734260468379:plot(dat$x, fit$residuals^2)
+1734260468423:plot(dat_nl$x, fit_nl$residuals^2)
+1734260468479:plot(dat_hs$x, fit_hs$residuals^2)
+1734260468522:plot(dat_nn$x, fit_nn$residuals^2)
+1734260469619:semistudent_residuals <- fit$residuals / sqrt(mse)
+1734260469636:semistudent_residuals_nl <- fit_nl$residuals / sqrt(mse_nl)
+1734260469670:semistudent_residuals_hs <- fit_hs$residuals / sqrt(mse_hs)
+1734260469706:semistudent_residuals_nn <- fit_nn$residuals / sqrt(mse_nn)
+1734260767724:boxplot(fit$residuals)
+1734260920693:boxplot(fit_nl$residuals)
+1734260938768:boxplot(fit_hs$residuals)
+1734260962003:boxplot(fit_nn$residuals)
+1734261711092:qqnorm(fit$residuals)
+1734261720845:qqnorm(fit_nl$residuals)
+1734261744793:qqnorm(fit_hs$residuals)
+1734261755828:qqnorm(fit_nn$residuals)

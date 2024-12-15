@@ -1,0 +1,336 @@
+bookdown::render_book()
+beta_0
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(123)
+# Initialize the population parameters and the simulation size
+beta_0 <- 10
+beta_1 <- 2
+err_var <- 4
+n <- 10
+sim_size <- 10000
+# Initialize a vector with varying levels for the predictor
+x <- seq(from = 0, to = 90, by = 10)
+# Initialize a matrix to hold the outcomes for the simulations
+y <- matrix(
+data = rep(NA, times = length(x) * sim_size),
+nrow = length(x), ncol = sim_size
+)
+# During each simulation, for each level of the predictor, sample from the
+# conditional probability distribution of the response
+for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+x[3]
+x[5]
+x_3_mean <- 50
+x_3 <- seq(from = 40, to = 60, length = 1000)
+y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+plot(x_3, y_3, xlab = "Y3", ylab = "")
+hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+x_5_mean <- 90
+x_5 <- seq(from = 80, to = 100, length = 1000)
+y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+plot(x_5, y_5, xlab = "Y5", ylab = "")
+hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+i_3_res <- y[3, ] - x_3_mean
+i_5_res <- y[5, ] - x_5_mean
+plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+abline(h = 0, col = "red")
+abline(v = 0, col = "red")
+vars <- rep(NA, times = n)
+for (i in 1:n) vars[i] <- var(y[i, ])
+# First, calculate the mean of the conditional probability distributions of Y
+estimated_means <- beta_0 + beta_1 * x
+# Second, calculate the residuals
+errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+# Third, sum the squared errors and divide by the appropriate degress of freedom
+mse <- sum(errors^2) / ((n * sim_size) - 2)
+slr_b1_estimates <- rep(NA, times = sim_size)
+slr_b0_estimates <- rep(NA, times = sim_size)
+slr_sse <- rep(NA, times = sim_size)
+slr_mse <- rep(NA, times = sim_size)
+slr_b1_var_estimates <- rep(NA, times = sim_size)
+slr_b1_se_estimates <- rep(NA, times = sim_size)
+for (i in 1:sim_size) {
+fit <- glm(y[, i] ~ x, family = gaussian)
+slr_b0_estimates[i] <- fit$coefficients[1]
+slr_b1_estimates[i] <- fit$coefficients[2]
+slr_sse[i] <- crossprod(fit$residuals)
+slr_mse[i] <- slr_sse[i] / (n - 2)
+slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+}
+b1_var <- err_var / sum((x - mean(x))^2)
+b1_se <- sqrt(b1_var)
+mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+abline(v = beta_1, col = "red")
+abline(v = beta_1 - 1.96*b1_se, col = "blue")
+abline(v = beta_1 + 1.96*b1_se, col = "blue")
+qqnorm(slr_b1_estimates)
+# We standardize B1 to obtain the standardized statistics
+slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+qqnorm(slr_b1_estimates_standardized)
+# We studentize B1 to obtain the studentized statistics
+slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+qqnorm(slr_b1_estimates_studentized)
+theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+# Calculate the lower and upper limits for the confidence intervals
+slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+summary(fit)
+sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+beta_0
+beta_1
+hist(slr_b0_estimates, breaks = 50)
+abline(v = beta_0, col = "red")
+hist(slr_b0_estimates, breaks = 50)
+abline(v = beta_0, col = "red")
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0")
+abline(v = beta_0, col = "red")
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+abline(v = beta_0, col = "red")
+err_var
+n
+mean(x)
+mean(x)^2
+x - mean(x)
+x - mean(x)
+(x - mean(x))
+(x - mean(x))^2
+sum((x - mean(x))^2)
+1/10 + 2025 / 8250
+(1/10 + 2025 / 8250) * 4
+b1_var
+b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+b0_var
+b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+b0_se <- sqrt(b0_var)
+var(slr_b0_estimates)
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
+set.seed(123)
+# Initialize the population parameters and the simulation size
+beta_0 <- 10
+beta_1 <- 2
+err_var <- 4
+n <- 10
+sim_size <- 10000
+# Initialize a vector with varying levels for the predictor
+x <- seq(from = 0, to = 90, by = 10)
+# Initialize a matrix to hold the outcomes for the simulations
+y <- matrix(
+data = rep(NA, times = length(x) * sim_size),
+nrow = length(x), ncol = sim_size
+)
+# During each simulation, for each level of the predictor, sample from the
+# conditional probability distribution of the response
+for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+x[3]
+x[5]
+x_3_mean <- 50
+x_3 <- seq(from = 40, to = 60, length = 1000)
+y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+plot(x_3, y_3, xlab = "Y3", ylab = "")
+hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+x_5_mean <- 90
+x_5 <- seq(from = 80, to = 100, length = 1000)
+y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+plot(x_5, y_5, xlab = "Y5", ylab = "")
+hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+i_3_res <- y[3, ] - x_3_mean
+i_5_res <- y[5, ] - x_5_mean
+plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+abline(h = 0, col = "red")
+abline(v = 0, col = "red")
+vars <- rep(NA, times = n)
+for (i in 1:n) vars[i] <- var(y[i, ])
+# First, calculate the mean of the conditional probability distributions of Y
+estimated_means <- beta_0 + beta_1 * x
+# Second, calculate the residuals
+errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+# Third, sum the squared errors and divide by the appropriate degress of freedom
+mse <- sum(errors^2) / ((n * sim_size) - 2)
+slr_b1_estimates <- rep(NA, times = sim_size)
+slr_b0_estimates <- rep(NA, times = sim_size)
+slr_sse <- rep(NA, times = sim_size)
+slr_mse <- rep(NA, times = sim_size)
+slr_b1_var_estimates <- rep(NA, times = sim_size)
+slr_b1_se_estimates <- rep(NA, times = sim_size)
+slr_b0_var_estimates <- rep(NA, times = sim_size)
+slr_b0_se_estimates <- rep(NA, times = sim_size)
+for (i in 1:sim_size) {
+fit <- glm(y[, i] ~ x, family = gaussian)
+slr_b0_estimates[i] <- fit$coefficients[1]
+slr_b1_estimates[i] <- fit$coefficients[2]
+slr_sse[i] <- crossprod(fit$residuals)
+slr_mse[i] <- slr_sse[i] / (n - 2)
+slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+slr_b0_var_estimates[i] <- slr_mse[i] * (1/n + mean(x)^2/sum((x - mean(x))^2))
+slr_b0_se_estimates[i] <- sqrt(slr_b0_var_estimates[i])
+}
+b1_var <- err_var / sum((x - mean(x))^2)
+b1_se <- sqrt(b1_var)
+mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+abline(v = beta_1, col = "red")
+abline(v = beta_1 - 1.96*b1_se, col = "blue")
+abline(v = beta_1 + 1.96*b1_se, col = "blue")
+qqnorm(slr_b1_estimates)
+# We standardize B1 to obtain the standardized statistics
+slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+qqnorm(slr_b1_estimates_standardized)
+# We studentize B1 to obtain the studentized statistics
+slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+qqnorm(slr_b1_estimates_studentized)
+theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+# Calculate the lower and upper limits for the confidence intervals
+slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+summary(fit)
+sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+abline(v = beta_0, col = "red")
+b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+b0_se <- sqrt(b0_var)
+hist(slr_b0_estimates, main = "Sampling Distribution of B0", xlab = "B0")
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates)
+b0_se
+slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates_standardized)
+slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+hist(slr_b0_estimates_standardized, breaks = 50, main = "Distribution of Standardized B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates_standardized)
+(slr_b0_estimates - beta_0) / slr_b0_se_estimates
+slr_b0_estimates_studentized <- (slr_b0_estimates - beta_0) / slr_b0_se_estimates
+hist(slr_b0_estimates_studentized, breaks = 50, main = "Distribution of Studentized B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates, main = "QQ for Sampling Distribution of B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates, main = "Normal QQ for Sampling Distribution of B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates_standardized, main = "Normal QQ for Studentized B0")
+theoretical_quantiles <- qnorm(sim_size)
+qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
+set.seed(123)
+# Initialize the population parameters and the simulation size
+beta_0 <- 10
+beta_1 <- 2
+err_var <- 4
+n <- 10
+sim_size <- 10000
+# Initialize a vector with varying levels for the predictor
+x <- seq(from = 0, to = 90, by = 10)
+# Initialize a matrix to hold the outcomes for the simulations
+y <- matrix(
+data = rep(NA, times = length(x) * sim_size),
+nrow = length(x), ncol = sim_size
+)
+# During each simulation, for each level of the predictor, sample from the
+# conditional probability distribution of the response
+for (i in 1:sim_size) y[, i] <- beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))
+x[3]
+x[5]
+x_3_mean <- 50
+x_3 <- seq(from = 40, to = 60, length = 1000)
+y_3 <- dnorm(x_3, mean = x_3_mean, sd = sqrt(err_var))
+plot(x_3, y_3, xlab = "Y3", ylab = "")
+hist(y[3, ], breaks = 50, main = "Distribution for Y3")
+x_5_mean <- 90
+x_5 <- seq(from = 80, to = 100, length = 1000)
+y_5 <- dnorm(x_5, mean = x_5_mean, sd = sqrt(err_var))
+plot(x_5, y_5, xlab = "Y5", ylab = "")
+hist(y[5, ], breaks = 50, main = "Distribution for Y5")
+i_3_res <- y[3, ] - x_3_mean
+i_5_res <- y[5, ] - x_5_mean
+plot(i_3_res, i_5_res, xlab = "Residuals (i = 3)", ylab = "Residuals (i = 5)")
+abline(h = 0, col = "red")
+abline(v = 0, col = "red")
+vars <- rep(NA, times = n)
+for (i in 1:n) vars[i] <- var(y[i, ])
+# First, calculate the mean of the conditional probability distributions of Y
+estimated_means <- beta_0 + beta_1 * x
+# Second, calculate the residuals
+errors <- sweep(y, MARGIN = 1, STATS = estimated_means, FUN = "-")
+# Third, sum the squared errors and divide by the appropriate degress of freedom
+mse <- sum(errors^2) / ((n * sim_size) - 2)
+slr_b1_estimates <- rep(NA, times = sim_size)
+slr_b0_estimates <- rep(NA, times = sim_size)
+slr_sse <- rep(NA, times = sim_size)
+slr_mse <- rep(NA, times = sim_size)
+slr_b1_var_estimates <- rep(NA, times = sim_size)
+slr_b1_se_estimates <- rep(NA, times = sim_size)
+slr_b0_var_estimates <- rep(NA, times = sim_size)
+slr_b0_se_estimates <- rep(NA, times = sim_size)
+for (i in 1:sim_size) {
+fit <- glm(y[, i] ~ x, family = gaussian)
+slr_b0_estimates[i] <- fit$coefficients[1]
+slr_b1_estimates[i] <- fit$coefficients[2]
+slr_sse[i] <- crossprod(fit$residuals)
+slr_mse[i] <- slr_sse[i] / (n - 2)
+slr_b1_var_estimates[i] <- slr_mse[i] / sum((x - mean(x))^2)
+slr_b1_se_estimates[i] <- sqrt(slr_b1_var_estimates[i])
+slr_b0_var_estimates[i] <- slr_mse[i] * (1/n + mean(x)^2/sum((x - mean(x))^2))
+slr_b0_se_estimates[i] <- sqrt(slr_b0_var_estimates[i])
+}
+b1_var <- err_var / sum((x - mean(x))^2)
+b1_se <- sqrt(b1_var)
+mean(slr_b1_estimates < (beta_1 - 1.96*b1_se))
+mean(slr_b1_estimates > (beta_1 + 1.96*b1_se))
+hist(slr_b1_estimates, breaks = 50, main = "Sampling Distribution of B1")
+abline(v = beta_1, col = "red")
+abline(v = beta_1 - 1.96*b1_se, col = "blue")
+abline(v = beta_1 + 1.96*b1_se, col = "blue")
+qqnorm(slr_b1_estimates)
+# We standardize B1 to obtain the standardized statistics
+slr_b1_estimates_standardized <- (slr_b1_estimates - beta_1) / b1_se
+hist(slr_b1_estimates_standardized, breaks = 50, main = "Sampling Distribution of Standardized B1")
+qqnorm(slr_b1_estimates_standardized)
+# We studentize B1 to obtain the studentized statistics
+slr_b1_estimates_studentized <- (slr_b1_estimates - beta_1) / slr_b1_se_estimates
+hist(slr_b1_estimates_studentized, breaks = 50, main = "Sampling Distribution of Studentized B1")
+qqnorm(slr_b1_estimates_studentized)
+theoretical_quantiles <- qt(ppoints(length(slr_b1_estimates_studentized)), df = 8)
+qqplot(theoretical_quantiles, slr_b1_estimates_studentized)
+# Calculate the lower and upper limits for the confidence intervals
+slr_b1_ci_lower_bounds <- slr_b1_estimates - slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+slr_b1_ci_upper_bounds <- slr_b1_estimates + slr_b1_se_estimates * qt(1 - 0.05/2, df = n - 2)
+mean((beta_1 > slr_b1_ci_lower_bounds) & (beta_1 < slr_b1_ci_upper_bounds))
+summary(fit)
+sqrt((crossprod(fit$residuals) / (n - 2)) / sum((x - mean(x))^2))
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+abline(v = beta_0, col = "red")
+b0_var <- err_var * (1/n + mean(x)^2 / sum((x - mean(x))^2))
+b0_se <- sqrt(b0_var)
+hist(slr_b0_estimates, breaks = 50, main = "Sampling Distribution of B0", xlab = "B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates, main = "Normal QQ for Sampling Distribution of B0")
+slr_b0_estimates_standardized <- (slr_b0_estimates - beta_0) / b0_se
+hist(slr_b0_estimates_standardized, breaks = 50, main = "Distribution of Standardized B0")
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates_standardized, main = "Normal QQ for Studentized B0")
+slr_b0_estimates_studentized <- (slr_b0_estimates - beta_0) / slr_b0_se_estimates
+hist(slr_b0_estimates_studentized, breaks = 50, main = "Distribution of Studentized B0")
+length(slr_b0_estimates_studentized
+)
+length(slr_b0_estimates_studentized) == sim_size
+theoretical_quantiles <- qnorm(ppoints(sim_size))
+qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "Normal QQ for Studentized B0")
+theoretical_quantiles <- qt(ppoints(sim_size), df = n - 2)
+qqplot(theoretical_quantiles, slr_b0_estimates_studentized, main = "t QQ for Studentized B0")

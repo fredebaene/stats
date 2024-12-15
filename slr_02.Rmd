@@ -1,0 +1,454 @@
+---
+title: "Simple Linear Regression: Diagnostics"
+date: "2024-12-15"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE}
+options(scipen = 999)
+```
+
+
+```{r echo = FALSE}
+set.seed(123)
+```
+
+# Simulations
+
+We assume the following simple linear regression model for the population:
+
+$$
+Y = 10 + 2X + \epsilon_i.
+$$
+
+In this example, we consider a sample comprising 10 observations. For each observation, 
+the level for $X$ is fixed. We repeatedly sample an outcome for each observation from 
+their respective conditional probability distributions for the outcome.
+
+```{r}
+# Initialize the population parameters and the simulation size
+beta_0 <- 10
+beta_1 <- 2
+err_var <- 4
+n <- 10
+sim_size <- 20
+
+# Initialize a vector with varying levels for the predictor
+x <- seq(from = 0, to = 90, by = 10)
+```
+
+```{r}
+# During each simulation, for each level of the predictor, sample from the 
+# conditional probability distribution of the response
+y <- c()
+for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var)))
+
+# Initialize a data frame with the data for the model that holds
+dat <- data.frame(x = rep(x, times = sim_size), y = y)
+```
+
+```{r}
+# We will create a second set of data where there is a departure from the normality 
+# of the regression function
+y <- c()
+for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x^2 + rnorm(n = n, sd = sqrt(1000)))
+
+# Initialize a data frame with the data for the model that holds
+dat_nl <- data.frame(x = rep(x, times = sim_size), y = y)
+```
+
+```{r}
+# We will create a third set of data where there is a departure from the contancy 
+# of the variance
+y <- c()
+for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = ((x + 10) / 10) * sqrt(err_var)))
+
+# Initialize a data frame with the data for the model that holds
+dat_hs <- data.frame(x = rep(x, times = sim_size), y = y)
+```
+
+```{r}
+# We will create a fourth set of data where there is a departure from the normality 
+# of the rror terms
+y <- c()
+for (i in 1:sim_size) y <- c(y, beta_0 + beta_1 * x + rnorm(n = n, sd = sqrt(err_var))^2)
+
+# Initialize a data frame with the data for the model that holds
+dat_nn <- data.frame(x = rep(x, times = sim_size), y = y)
+```
+
+# Model Fitting
+
+```{r}
+# Fit a simple linear regression model to the data
+fit <- glm(y ~ x, family = gaussian, data = dat)
+```
+
+```{r}
+# Fit a simple linear regression model to the data
+fit_nl <- glm(y ~ x, family = gaussian, data = dat_nl)
+```
+
+```{r}
+# Fit a simple linear regression model to the data
+fit_hs <- glm(y ~ x, family = gaussian, data = dat_hs)
+```
+
+```{r}
+# Fit a simple linear regression model to the data
+fit_nn <- glm(y ~ x, family = gaussian, data = dat_nn)
+```
+
+# Diagnostics
+
+## Predictor
+
+We perform diagnostics of the predictor to inspect the range of validity or scope and 
+identify any potential X outliers. We can also use these diagnostics to generally get 
+an idea of the distribution of the levels of the predictor.
+
+```{r echo = FALSE}
+boxplot(x)
+```
+
+```{r echo = FALSE}
+stem(x)
+```
+
+```{r echo = FALSE}
+dotchart(x)
+```
+
+## Residuals
+
+Direct diagnostics for the response are not useful. Indirect diagnostics for the response via 
+the study of the residuals is more useful. The residuals are defined as follows:
+
+$$
+E_i = Y_i - \hat{Y_i}
+$$
+
+The error $e_i$ is the observed error and is not the same as the true unknown error $\epsilon_i$. The 
+errors $\epsilon_i$ are independent random variables that follow a normal distribution:
+
+$$
+\epsilon_i \sim \mathcal{N}(0, \sigma^2)
+$$
+
+The fact that they are independent is captured as follows:
+
+$$
+Cov(\epsilon_i, \epsilon_j) = 0
+$$
+
+### Mean of Residuals
+
+The mean of the observed errors is always 0:
+
+$$
+\bar{E} = \frac{\sum E_i}{n}
+$$
+
+```{r}
+round(mean(fit$residuals), 5)
+```
+
+```{r}
+round(mean(fit_nl$residuals), 5)
+```
+
+```{r}
+round(mean(fit_hs$residuals), 5)
+```
+
+```{r}
+round(mean(fit_nn$residuals), 5)
+```
+
+We cannot use the mean of the residuals to assess whether $E(\epsilon_i) = 0$ holds.
+
+### Variance of Residuals
+
+The variance of the residuals is defined as follows:
+
+$$
+\frac{\sum (E_i - \bar{E})^2}{n - 2} = \frac{\sum E_i^2}{n - 2} = MSE
+$$
+
+The mean squared error can be used as an unbiased estimater of $\sigma^2$, the variance of 
+the errors $\epsilon_i$.
+\
+```{r}
+sse <- sum(fit$residuals^2)
+mse <- sse / (length(x) - 2)
+
+sse_nl <- sum(fit_nl$residuals^2)
+mse_nl <- sse_nl / (length(x) - 2)
+
+sse_hs <- sum(fit_hs$residuals^2)
+mse_hs <- sse_nl / (length(x) - 2)
+
+sse_nn <- sum(fit_nn$residuals^2)
+mse_nn <- sse_nn / (length(x) - 2)
+```
+
+We obtain an $MSE = `r round(mse, 3)`$, while we know the true error variance $\sigma^2 = `r err_var`$.
+
+### Semistudentized Residuals
+
+The residuals can be standardized as follows:
+
+$$
+e^*_i = \frac{e_i - \bar{e}}{\sqrt{MSE}} = \frac{e_i}{\sqrt{MSE}}
+$$
+
+Note that we are not dividing the residuals by their own standard deviation (standard error) but 
+by the estimator of $\sqrt{Var(\epsilon_i)}$:
+
+$$
+Var(\epsilon_i) \neq Var(E_i)
+$$
+
+Because we are not dividing by their standard error, the statistic $e^*_i$ is called the 
+semistudentized residual and not the studentized residual.
+
+## Diagnostics for Residuals
+
+Let's have a look at how we can detect six departures from the simple linear regression model 
+through the study of diagnostic plots of the residuals.
+
+### Departure from Linearity
+
+We have several plots available to check for a departure from linearity. We can use scatter 
+plots, plots of residuals vs. predictor, and plots of residuals vs. fitted values.
+
+```{r}
+plot(dat$x, dat$y)
+```
+
+```{r}
+plot(dat$x, fit$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(fit$fitted.values, fit$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(dat_nl$x, dat_nl$y)
+```
+
+```{r}
+plot(dat_nl$x, fit_nl$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(fit_nl$fitted.values, fit_nl$residuals)
+abline(h = 2, col = "red")
+```
+
+```{r}
+plot(dat_hs$x, dat_hs$y)
+```
+
+```{r}
+plot(dat_hs$x, fit_hs$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(fit_hs$fitted.values, fit_hs$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(dat_nn$x, dat_nn$y)
+```
+
+```{r}
+plot(dat_nn$x, fit_nn$residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(fit_nn$fitted.values, fit_nn$residuals)
+abline(h = 0, col = "red")
+```
+
+### Departure from Constancy of Variance
+
+To investigate any departure from homoscedasticity, again, the following plots can be 
+used:
+
+* scatter plot of outcome as a function of predictor
+* scatter plot of residuals as a function of the predictor
+* scatter plot of residuals as a function of the fitted values.
+
+To have a good view on the change in the magnitude of the error variance, without having 
+to take into account the sign, we can square the residuals.
+
+```{r}
+plot(dat$x, fit$residuals^2)
+```
+
+```{r}
+plot(dat_nl$x, fit_nl$residuals^2)
+```
+
+```{r}
+plot(dat_hs$x, fit_hs$residuals^2)
+```
+
+```{r}
+plot(dat_nn$x, fit_nn$residuals^2)
+```
+
+### Residual Outliers
+
+To detect outliers it is better to use semistudentized residuals instead of the regular 
+residuals. We can then plot the semistudentized residuals as a function of the predictor or 
+the fitted values. As a rough rule of thumb, when the number of observations is large, is 
+that any observations with an absolute value of the semistudentized residual larger than 
+four is considered a residual outlier:
+
+$$
+\mathopen | e^*_i \mathclose | 
+= \mathopen | \frac{e_i - \bar{e}}{\sqrt{MSE}} \mathclose | 
+= \mathopen | \frac{e_i}{\sqrt{MSE}} \mathclose | > 4
+$$
+
+```{r}
+semistudent_residuals <- fit$residuals / sqrt(mse)
+semistudent_residuals_nl <- fit_nl$residuals / sqrt(mse_nl)
+semistudent_residuals_hs <- fit_hs$residuals / sqrt(mse_hs)
+semistudent_residuals_nn <- fit_nn$residuals / sqrt(mse_nn)
+```
+
+```{r}
+plot(dat$x, semistudent_residuals)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(dat_nl$x, semistudent_residuals_nl)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(dat_hs$x, semistudent_residuals_hs)
+abline(h = 0, col = "red")
+```
+
+```{r}
+plot(dat_nn$x, semistudent_residuals_nn)
+abline(h = 0, col = "red")
+```
+
+### Non-Independence of Errors
+
+To detect any possible non-independence of the erros, a sequence plot of the residuals 
+can be created. This is when there is an order in the observations, for example, when it 
+concerns measurements taken over a period of time (time sequence) or taken over different 
+countries in a particular order (geographical sequence).
+
+### Non-Normality of Errors
+
+Small departures from normality are not of that of a concern, but large departures can 
+cause trouble.
+
+Distribution plots can be helpful in assessing normality of the errors. A box plot can 
+help us in assessing the symmetry of the distribution and identifying any possible outliers.
+
+```{r}
+boxplot(fit$residuals)
+```
+
+```{r}
+boxplot(fit_nl$residuals)
+```
+
+```{r}
+boxplot(fit_hs$residuals)
+```
+
+```{r}
+boxplot(fit_nn$residuals)
+```
+
+We can also create QQ plots to assess normality of errors.
+
+```{r}
+qqnorm(fit$residuals)
+```
+
+```{r}
+qqnorm(fit_nl$residuals)
+```
+
+```{r}
+qqnorm(fit_hs$residuals)
+```
+
+```{r}
+qqnorm(fit_nn$residuals)
+```
+
+In relation to inferences on $\beta_0$ and $\beta_1$. If there is a slight departure from 
+normality in the conditional probability distributions of $Y$, then this does not affect 
+the sampling distributions of $B_0$ and $B_1$. Their sampling distributions are still normal. 
+If, however, the departure from normality of the conditional probability distributions of $Y$ 
+is quite strong, this will affect the sampling distributions of $B_0$ and $B_1$, unless 
+the sample sizes are quite large, as these sampling distributions are asymptotically normal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
