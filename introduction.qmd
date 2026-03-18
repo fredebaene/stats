@@ -27,7 +27,7 @@ subset of the population is studies. This study is called a **sample**. The
 sample must be representative in order to be able to conclude something about
 the population from which it is drawn.
 
-# Variables and Measures
+# Variables
 
 We use **variables** to represent the characteristics of the elements. The
 possible outcomes for a variable determine the type of variable we are dealing
