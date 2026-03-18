@@ -1,0 +1,19 @@
+---
+title: "Introduction"
+author: "Frederick De Baene"
+format: html
+editor: visual
+---
+
+# Introduction
+
+This page serves as an introduction to different concepts and terms in
+statistics.
+
+# Population
+
+The population is the complete set of elements in which we are interested and on
+which we want to learn something. These elements can be individuals or objects.
+We want to learn something about the characteristics of this population, and we
+do this by observing the characteristics of the individual elements of the
+population.
