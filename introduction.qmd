@@ -129,9 +129,7 @@ population.
 set.seed(123)
 n <- 60e3
 
-dat <- tibble::tibble(
-    X = rnorm(n = n, mean = 172, sd = 5)
-)
+dat <- tibble::tibble(X = rnorm(n = n, mean = 172, sd = 5))
 ```
 
 We can now use the observed values to visualize the empirical distribution of
@@ -141,7 +139,10 @@ $X$.
 ggplot(dat, aes(x = X)) +
     geom_histogram(bins = 50) +
     theme_classic() +
-    scale_y_continuous(expand = c(0, 0))
+    scale_y_continuous(expand = c(0, 0)) +
+    labs(title = "Empirical distribution of length") +
+    labs(x = "Length (centimeters)", y = "Frequency") +
+    theme(plot.title = element_text(hjust = 0.5))
 ```
 
 # Appendix A
