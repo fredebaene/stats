@@ -1,7 +1,10 @@
 ---
 title: "Introduction"
 author: "Frederick De Baene"
-format: html
+format:
+  html:
+    toc: true
+    number-sections: true
 editor: visual
 ---
 
@@ -37,22 +40,37 @@ with:
 - qualitative: nominal or ordinal.
 
 The possible outcomes for a discrete random variable are countable or finite, so
-often the observed value for a discrete random variable is the result of counting
-something. A continuous random variable has an infinite number of possible
-outcomes, i.e., all the possible numbers within a particular range.
+often the observed value for a discrete random variable is the result of
+counting something. A continuous random variable has an infinite number of
+possible outcomes, i.e., all the possible numbers within a particular range.
 
 The possible outcomes for qualitative random variables are categories. If the
 categories can be ordered, then we are talking about an ordinal random variable,
 otherwise it is a nominal random variable.
 
-The characteristics of a population are statistical measures, measures of center
-and measures of dispersion. These measures describe the distribution of a
-variable (characteristic in the population). A distribution shows how the values
-of a variable are distributed across the elements in the population. A
-**theoretical distribution** shows how the possible values for a variable should
-be distributed across the elements in a population (or sample), while an
-**empirical distribution** shows how the observed values for a variable are
-distributed across the elements in the sample (or population).
+Another definition of an experiment states that it captures the outcome of a
+random experiment (random process). An example of a random experiment is throwing
+a fair coin. The sample space is:
+
+$$
+S = \{ heads, tails \}
+$$
+
+Repeated executions of the same random experiment do not necessarily yield the
+same result. If we execute the same experiment $k$ times, then the random
+variable $Y_i$ captures the outcome of the $i$th execution of these $k$
+executions of the same experiment.
+
+# Distributions
+
+A distribution shows how the outcomes or values of a variable are distributed
+across the elements in a sample or population. However, there is a distinction
+between **theoretical** and **empirical** distributions. A theoretical
+distribution shows how the possible outcomes of a variable are distributed
+across the elements in the population; they are based on mathematical models and
+reflect what we expect to see. An empirical distribution shows how the observed
+outcomes of a variable are distributed across the elements in a sample; they are
+based on what we observe.
 
 As an example, let us look at tossing a fair die. First, we must define the
 sample space. The sample space is the complete set of possible outcomes:
@@ -61,45 +79,80 @@ $$
 S = \{ 1, 2, 3, 4, 5, 6 \}
 $$
 
-We assume that each possible outcome is equally likely to occur when the die is
-tossed. Therefore, the theoretical distribution can be visualized as:
+We assume that each possible outcome is equally likely. The theoretical
+distribution can be visualized as:
 
-```{r}
+```{r echo = FALSE}
 dat <- tibble::tibble(x = 1L:6L, p = rep(1/6, 6))
 ggplot(dat, aes(x = x, y = p)) +
-    geom_col() +
-    theme_classic() +
-    scale_y_continuous(expand = c(0, 0)) +
-    labs(title = "Theoretical distribution of a fair die toss") +
-    labs(x = "Outcome (number of eyes)", y = "Probability") +
-    theme(plot.title = element_text(hjust = 0.5))
+  geom_col() +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(title = "Theoretical distribution of a fair die toss") +
+  labs(x = "Outcome (number of eyes)", y = "Probability") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 Now, let us simulate an experiment where we toss a fair die 30 times and each
 time note the number of eyes thrown.
 
 ```{r}
+# Ensure reproducibility
 set.seed(456)
-dat <- tibble::tibble(x = sample(x = 1L:6L, size = 30, replace = TRUE))
 
-dat
+# Toss a fair die 30 times and note the outcome of each toss
+dat <- tibble::tibble(x = sample(x = 1L:6L, size = 30, replace = TRUE))
 ```
 
+We can now use the observed values to visualize the empirical distribution:
 
-## Measures of Center
+```{r echo = FALSE}
+ggplot(dat, aes(x = x)) +
+  geom_bar() +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(title = "Empirical distribution of a fair die toss") +
+  labs(x = "Outcome (number of eyes)", y = "Frequency") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
-There are different measures of center. The first one is the **mean**, and is
-calculated as follows:
+We see that the theoretical and empirical distributions are not entirely the
+same. The theoretical distribution shows us that each possible outcome is
+equally likely. Therefore, when repeating the experiment 30 times, we expect
+that 5 out of 30 times a 1 is thrown, 5 out of 30 times a 2 is thrown, etc. In
+the actual experiment, a 1 and 3 were thrown 5 times each, as expected; a 2 and
+4 were thrown 4 times each, 1 less than expected; and a 5 and 6 were thrown 6
+times each, 1 more than expected.
+
+# Measures
+
+We can use measures to describe and understand distributions. Measures of
+central tendency, such as the mean, median, and mode, tell us something about
+the gravity of a distribution, about its typical value, while measures of
+dispersion (or variability), such as range, standard deviation, and variance,
+tell us something about how the values of a variable vary across observations.
+
+## Measures of Central Tendency
+
+The **mean** is calculated as follows:
 
 $$
 \overline{X} = \frac{1}{n} \sum_{i = 1}^{n} X_i
 $$
 
-The median is the value for the variable for which at least half of the observed
-values are less than or equal to. The median is obtained by ordering all
-observed values from smallest to greatest and take the middle value. If the
-number of observed values is even, we take the middle two values and calculate
-their average.
+It acts as a balance point for the data, and it is sensitive to outliers. The
+**median** is the middle value of the ordered dataset. If the number of observations
+is odd, the median is the value of the observation at the following position in an
+ordered dataset:
+
+$$
+\frac{n + 1}{2}
+$$
+
+If the number of observations is even, the median is the mean of the middle two
+observations at positions $n/2$ and $(n/2) + 1$ in the ordered dataset. The
+median is not sensitivi to outliers. The **mode** is the most frequently
+occurring value in the dataset.
 
 # Case Study
 
@@ -137,15 +190,15 @@ $X$.
 
 ```{r}
 ggplot(dat, aes(x = X)) +
-    geom_histogram(bins = 50) +
-    theme_classic() +
-    scale_y_continuous(expand = c(0, 0)) +
-    labs(title = "Empirical distribution of length") +
-    labs(x = "Length (centimeters)", y = "Frequency") +
-    theme(plot.title = element_text(hjust = 0.5))
+  geom_histogram(bins = 50) +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(title = "Empirical distribution of length") +
+  labs(x = "Length (centimeters)", y = "Frequency") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
-# Appendix A
+# Appendix A {.unnumbered}
 
 The estimator for the population mean:
 
@@ -159,10 +212,21 @@ means:
 $$
 \begin{align}
 \overline{X + Y} 
-    &= \frac{1}{n} \cdot \bigg[ \sum_{i = 1}^{n} \big[ X_i + Y_i \big] \bigg] \\
-    &= \frac{1}{n} \cdot \bigg[ \sum_{i = 1}^{n} X_i + \sum_{i = 1}^{n} Y_i \bigg] \\
-    &= \frac{1}{n} \cdot \sum_{i = 1}^{n} X_i + \frac{1}{n} \cdot \sum_{i = 1}^{n} Y_i \\
-    &= \overline{X} + \overline{Y}
+  &= \frac{1}{n} \cdot \bigg[ \sum_{i = 1}^{n} \big[ X_i + Y_i \big] \bigg] \\
+  &= \frac{1}{n} \cdot \bigg[ \sum_{i = 1}^{n} X_i + \sum_{i = 1}^{n} Y_i \bigg] \\
+  &= \frac{1}{n} \cdot \sum_{i = 1}^{n} X_i + \frac{1}{n} \cdot \sum_{i = 1}^{n} Y_i \\
+  &= \overline{X} + \overline{Y}
 \end{align}
 $$
 
+The mean of a variable scaled by a constant $c$ is the mean of the original
+variable scaled by that same constant $c$:
+
+$$
+\begin{align}
+\overline{cX} 
+  &= \frac{1}{n} \cdot \sum_{i = 1}^{n} c X_i \\
+  &= c \cdot \frac{1}{n} \cdot \sum_{i = 1}^{n} X_i \\
+  &= c \cdot \overline{X}
+\end{align}
+$$
