@@ -1,0 +1,12 @@
+{
+    "new-document": {
+        "title": "Survival",
+        "author": "Frederick De Baene",
+        "format": "pdf",
+        "engine": "knitr",
+        "kernel": "python3",
+        "language": "r",
+        "editor": "source",
+        "empty": false
+    }
+}

@@ -1,0 +1,5 @@
+"0","# Data from the Ohio State University Bone Marrow Transplant Unit"
+"0","dat <- tibble("
+"0","  date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),"
+"0","  cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)"
+"0",")"
