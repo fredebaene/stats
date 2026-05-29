@@ -1,0 +1,108 @@
+---
+title: "Variance"
+author: "Frederick De Baene"
+format:
+  html:
+    toc: true
+---
+
+```{r echo=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# Variance Estimation
+
+Assume we are studying two populations. The random variable $X$ is distributed
+normally in both populations. In population 1:
+
+$$
+X \sim N(\mu_1, \sigma^2)
+$$
+
+with $\mu_1 = 15$. In population 2:
+
+$$
+X \sim N(\mu_2, \sigma^2)
+$$
+
+with $\mu_2 = 25$. Note that in both populations the variance $\sigma^2$ of X
+is the same, i.e., $\sigma^2 = 25$. Two populations with the same variance is denoted
+by homoscedasticity. We can use this to our advantage to obtain more precise estimates
+of $\sigma^2$.
+
+For this simulation, we repeatedly sample 15 observations from each population.
+Let $n_1$ ($n_2$) denote the sample size of the sample randomly drawn from
+population 1 (2). For each sample, we use the variance estimator $\hat{\sigma}(X)$
+to estimate the population variance for each population separately:
+
+$$
+\hat{\sigma}^2 = \frac{\sum_{i = 1}^{n} (X_i - \overline{X})^2}{n - 1}
+$$
+
+Then we also use the estimator for the pooled variance:
+
+$$
+\hat{\sigma}_{pooled}^2 = \frac
+  {(n_1 - 1) \cdot s_1^2 + (n_2 - 1) \cdot s_2^2}
+  {n_1 + n_2 - 2}
+$$
+
+with $s_1^2$ and $s_2^2$ the sample standard deviations for the samples from
+population 1 and 2, respectively.
+
+```{r}
+# Define settings for simulation
+set.seed(4294)
+
+n_1 <- n_2 <- 15
+N <- 5000L
+
+mu_1 <- 15
+mu_2 <- 25
+var_1 <- 25
+var_2 <- 25
+
+est_var_1 <- rep(NA, N)
+est_var_2 <- rep(NA, N)
+est_pool_var <- rep(NA, N)
+
+for (i in 1L:N) {
+  
+  # Randomly draw samples from populations 1 and 2
+  X_1 <- rnorm(n = n_1, mean = mu_1, sd = sqrt(var_1))
+  X_2 <- rnorm(n = n_2, mean = mu_2, sd = sqrt(var_2))
+  
+  # Estimate the population variance in both populations separately
+  est_var_1[i] <- var(X_1)
+  est_var_2[i] <- var(X_2)
+  
+  # Estimate pooled variance
+  est_pool_var[i] <- ((n_1 - 1)*var(X_1) + (n_2 - 1)*var(X_2)) / (n_1 + n_2 - 2)
+  
+}
+
+sim_res <- tibble(
+  idx = 1L:N,
+  est_var_1 = est_var_1,
+  est_var_2 = est_var_2,
+  est_pool_var = est_pool_var
+)
+
+sim_res <- pivot_longer(sim_res, cols = c(est_var_1, est_var_2, est_pool_var))
+```
+
+We can see that the precision of the pooled variance estimator is better than
+the precision of the estimators for the variances for each population.
+
+```{r echo=FALSE}
+ggplot(sim_res, aes(x = value, color = name, fill = name)) +
+  geom_density(alpha = 0.3) +
+  geom_vline(xintercept = var_1, color = "red") +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(
+    title = "Distribution of variance estimates",
+    x = "Variance estimate", y = NULL
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```

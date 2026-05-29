@@ -1,0 +1,8 @@
+"0","observation_months <- 0L:34L"
+"0","S_tilde <- rep(NA, max(observation_months))"
+"0",""
+"0","for (t in observation_months) {"
+"0","  S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))"
+"0","}"
+"0",""
+"0","km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)"

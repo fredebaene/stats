@@ -1,0 +1,512 @@
+km_fit <- survfit(
+Surv(y, ind) ~ x,
+data = dat
+)
+km_fit <- survfit(Surv(y, ind) ~ x, data = dat)
+summary(km_fit)
+dat_split <- split(dat, x)
+dat_split <- split(dat, dat$x)
+dat_split
+dat_split[[1]]
+summary(survfit(Surv, y, ind) ~ 1, data = dat_split[[1]])
+summary(survfit(Surv(y, ind) ~ 1, data = dat_split[[1]]))
+ggsurvplot(km_fit)
+# Get a sample dataset
+# Create a data frame
+dat <- data.frame(
+time = c(12, 18, 24, 30, 36, 6, 15, 20, 28, 40, 8, 10, 14, 16, 22, 5, 12, 18, 20, 25),
+status = c(1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0),
+group = factor(rep(c("Treatment", "Control"), each = 10))
+)
+km_fit <- survfit(Surv(time, status) ~ group, data = dat)
+summary(km_fit)
+dat_split <- split(dat, dat$group)
+summary(survfit(Surv(time, status) ~ 1, data = dat_split[[1]]))
+ggsurvplot(km_fit)
+# Compare survival in both groups
+surv_diff <- survdiff(Surv(time, status) ~ group, data = dat)
+surv_diff
+dat
+dat |>
+arrange(time)
+dat |>
+filter(status == 1) |>
+arrange(time)
+dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by("time", "group") |>
+mutate(n_by_group = n())
+dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(c("time", "group")) |>
+mutate(n_by_group = n())
+?group_by
+dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(time, group) |>
+mutate(n_by_group = n())
+n_by_group <- dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(time, group) |>
+mutate(n_by_group = n())
+dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(time) |>
+mutate(n_by_tp = n())
+n_by_group <- dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(time, group) |>
+mutate(n_by_group = n())
+n_by_tp <- dat |>
+filter(status == 1) |>
+arrange(time) |>
+group_by(time) |>
+mutate(n_by_tp = n())
+n_by_tp
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = N - lag(N)
+)
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = N - head(N)
+)
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = N - lag(N, default = 0)
+)
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = nrow(dat) - cumsum(dat$n_by_tp[row_number()])
+)
+nrow(dat),
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = ifelse(
+row_number() == 1,
+nrow(dat),
+nrow(dat) - cumsum(dat$n_by_tp[row_number()])
+)
+)
+n_by_tp |>
+mutate(
+N = nrow(dat),
+n_at_risk = ifelse(
+row_number() == 1,
+nrow(dat),
+nrow(dat) - cumsum(dat$n_by_tp[1L:row_number()])
+)
+)
+max(dat$time)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <_ max(dat$time)
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <_ max(dat$time)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- max(dat$time)
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+observation_months
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j
+)
+View(km_estimates)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- max(dat$time)
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+for (t in 1L:observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j
+)
+View(km_estimates)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(1L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+}
+View(km_estimates)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(1L, max(dat$time))
+observation_months
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j
+d_j
+c_j
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+}
+r_jr_j
+r_j
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+}
+View(km_estimates)
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j
+)
+View(km_estimates)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+View(dat)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+d_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment" & dat$status == 1)
+c_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment" & dat$status == 0)
+r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+d_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control" & dat$status == 1)
+c_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control" & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j,
+r_j_trt = r_j_trt,
+d_j_trt = d_j_trt,
+c_j_trt = c_j_trt,
+r_j_ctl = r_j_ctl,
+d_j_ctl = d_j_ctl,
+c_j_ctl = c_j_ctl
+)
+View(km_estimates)
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j,
+r_j_trt = r_j_trt,
+d_j_trt = d_j_trt,
+c_j_trt = c_j_trt,
+r_j_ctl = r_j_ctl,
+d_j_ctl = d_j_ctl,
+c_j_ctl = c_j_ctl
+)
+# Calculate the expected number of events for each group at each time point
+km_estimates
+# Calculate the expected number of events for each group at each time point
+km_estimates
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j,
+r_j_trt = r_j_trt,
+d_j_trt = d_j_trt,
+c_j_trt = c_j_trt,
+r_j_ctl = r_j_ctl,
+d_j_ctl = d_j_ctl,
+c_j_ctl = c_j_ctl
+)
+# Calculate the expected number of events for each group at each time point
+km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j)
+)
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j)
+)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+v_j_trt = r_j_trt * (r_j_ctl / r_j) * ((r_j - d_j) / (r_j - 1)),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+v_j_ctl = r_j_ctl * (r_j_trt / r_j) * ((r_j - d_j) / (r_j - 1)),
+)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+sum(km_estimates$d_j_ctl_exp) / sum(km_estimates$v_j_ctl)
+View(km_estimates)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+sum(km_estimates$d_j_ctl_exp) / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt) - sum(km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+v_j_trt = r_j_trt * (r_j_ctl / r_j) * ((r_j - d_j) / (r_j - 1)),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+v_j_ctl = r_j_ctl * (r_j_trt / r_j) * ((r_j - d_j) / (r_j - 1)),
+) |>
+filter(d_j > 0)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+surv_diff$var
+sum(v_j_trt)
+sum(km_estimates$v_j_trt)
+sqrt(sum(km_estimates$v_j_trt))
+surv_diff$n
+surv_diff$var
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+?survdiff
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j,
+r_j_trt = r_j_trt,
+d_j_trt = d_j_trt,
+c_j_trt = c_j_trt,
+r_j_ctl = r_j_ctl,
+d_j_ctl = d_j_ctl,
+c_j_ctl = c_j_ctl
+)
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+v_j_trt = r_j_trt * (r_j_ctl / r_j^2) * ((r_j - d_j) / (r_j - 1)),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+v_j_ctl = r_j_ctl * (r_j_trt / r_j^2) * ((r_j - d_j) / (r_j - 1)),
+) |>
+filter(d_j > 0)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / ?2.636085
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / ?2.636085
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+for (t in observation_months) {
+r_j[t + 1] <- sum(dat$time >= t)
+d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+}
+km_estimates <- tibble(
+time = observation_months,
+r_j = r_j,
+d_j = d_j,
+c_j = c_j,
+r_j_trt = r_j_trt,
+d_j_trt = d_j_trt,
+c_j_trt = c_j_trt,
+r_j_ctl = r_j_ctl,
+d_j_ctl = d_j_ctl,
+c_j_ctl = c_j_ctl
+)
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+mutate(
+d_j_trt_exp = r_j_trt * (d_j / r_j),
+v_j_trt = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1)),
+d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+v_j_ctl = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1))
+) |>
+filter(d_j > 0)
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)

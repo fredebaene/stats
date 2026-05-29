@@ -1,0 +1,6 @@
+help/library/tibble/html/add_column.html,R: Add columns to a data frame
+help/library/survival/html/survfit.html,R: Create survival curves
+help/library/survival/html/survfit.formula.html,R: Compute a Survival Curve for Censored Data
+help/library/NULL/help/group_by,R: help
+help/library/dplyr/html/group_by.html,R: Group by one or more variables
+help/library/survival/html/survdiff.html,R: Test Survival Curve Differences

@@ -1,0 +1,511 @@
+---
+title: "Survival"
+author: "Frederick De Baene"
+format:
+  html:
+    toc: true
+    number-sections: true
+---
+
+```{r echo=FALSE}
+suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(survival))
+suppressPackageStartupMessages(library(survminer))
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# Survival
+
+The survival function $S(t)$ calculates the probability that the event occurs
+after time $t$:
+
+$$
+S(t) = \mathbb{P} \big[ T > t \big]
+$$
+
+Given a sample dataset, we can estimate the survival function $S(t)$ with the
+following estimator:
+
+$$
+\tilde{S}(t) = \frac{\sum I[T > t]}{n}
+$$
+
+with $I[T > t]$ an indicator variable which is $1$ if the event occurs after
+time $t$ (and $0$ otherwise), $n$ the sample size, and $\sum I[T > t]$ the number
+of observations in the dataset for which the event occurs after time $t$.
+
+In this sense, the estimator represents the fraction of patients that is event-free
+at time $t$.
+
+## No Censoring
+
+```{r}
+# Data from the Ohio State University Bone Marrow Transplant Unit
+dat <- tibble(
+  date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+  cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+)
+```
+
+```{r echo=FALSE}
+kable(dat) 
+```
+
+For the dataset, we can estimate $S(t)$ using $\tilde{S}(t)$:
+
+```{r}
+# Use a naive non-parametric estimator to estimate the survival function
+observation_months <- 0L:34L
+S_tilde <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+}
+
+km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+```
+
+To estimate the true survival function $S(t)$, there is also the non-parametric
+Kaplan-Meier (KM) estimator:
+
+$$
+\hat{S}(t) = \prod_{j; t_j < t} (1 - \frac{d_j}{r_j})
+$$
+
+with $r_j$ the number at risk at time $t_j$, $d_j$ the number of events that occur
+at time $t_j$.
+
+```{r}
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  
+  r_j[t + 1] <- sum(dat$date >= t)
+  d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+  c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+  
+}
+
+km_estimates <- add_column(
+  km_estimates,
+  r_j = r_j,
+  d_j = d_j,
+  c_j = c_j,
+  .before = "S_tilde"
+)
+
+# Calculate the hazard and estimate S(t)
+km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+```
+
+If there is no censoring, then $\tilde{S}(t)$ and $\hat{S}(t)$ are the same.
+
+```{r echo=FALSE}
+kable(km_estimates)
+```
+
+## With Censoring
+
+If there is censoring, then the estimator $\tilde{S}(t)$ underestimates the
+probability of survival. People who are censored at time $t$ do not die at
+time $t$. However, $\tilde{S}(t)$ considers them as having had the event at
+time $t$.
+
+```{r}
+# Data from the Ohio State University Bone Marrow Transplant Unit
+dat <- tibble(
+  date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+  cens = c(1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0)
+)
+```
+
+The following patients were followed up for 34 months.
+
+```{r echo=FALSE}
+kable(dat)
+```
+
+```{r}
+# Use a naive non-parametric estimator to estimate the survival function
+observation_months <- 0L:34L
+S_tilde <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+}
+
+km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+```
+
+```{r}
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  
+  r_j[t + 1] <- sum(dat$date >= t)
+  d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+  c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+  
+}
+
+km_estimates <- add_column(
+  km_estimates,
+  r_j = r_j,
+  d_j = d_j,
+  c_j = c_j,
+  .before = "S_tilde"
+)
+
+# Calculate the hazard and estimate S(t)
+km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+```
+
+# Hazard
+
+The hazard is the instantaneous risk of the event occurring. Heuristically, we
+can interpret this as a conditional probability of the event occurring at time
+$t$ given that it has not yet occurred up to time $t$:
+
+$$
+\lambda_t = \mathbb{P} \big[ T = t | T \geq t \big] = \frac{d_t}{r_t}
+$$
+
+with $r_t$ the number at risk at time $t$ and $d_t$ the number of events that
+occurred at time $t$.
+
+```{r}
+# Calculate the hazard
+km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+```
+
+We can now estimate the survival function with the non-parametric Kaplan-Meier
+estimator.
+
+```{r}
+# Estimate S(t)
+km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+```
+
+We can also estimate it using standard R packages.
+
+```{r}
+# Estimate S(t) using the non-parametric KM estimator
+km_fit <- survfit(Surv(date, cens) ~ 1, data = dat)
+```
+
+```{r}
+summary(km_fit)
+```
+
+We can plot the estimated survival curve.
+
+```{r}
+ggsurvplot(km_fit)
+```
+
+If we ignore censoring, then we underestimate the survival probability. Individuals
+who are censored at time $t$ are now considered to have the event at time $t$.
+
+```{r}
+# Faulty estimation of overall survival
+S_tilde_t <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  S_tilde_t[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+}
+
+km_estimates$S_tilde_t <- S_tilde_t
+```
+
+```{r echo=FALSE}
+kable(km_estimates)
+```
+
+# Standard Error
+
+The Greenwood formula can be used to estimate the standard error of survival
+probability estimates:
+
+$$
+\hat{\sigma^2} \big[ \hat{S}(t) \big] 
+  = \big[ \hat{S}(t) \big] ^2 \cdot \sum_{t_i \leq t} \frac{d_i}{r_i (r_i - d_i)}
+$$
+
+We can calculate this manually.
+
+$$
+SE \big[ \hat{L}(t) \big] 
+  = \frac
+    { SE \big[ \hat{S}(t) \big] }
+    { \hat{S}(t) \cdot | log \big( \hat{S}(t) \big) | }
+$$
+
+```{r}
+# Calculate the estimated standard error using the Greenwood formula
+fac_1 <- km_estimates$S_t^2
+fac_2 <- cumsum(
+  km_estimates$d_j
+  / (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j))
+)
+
+km_estimates <- km_estimates |>
+  add_column(est_var = fac_1 * fac_2) |>
+  mutate(
+    est_se = sqrt(est_var),
+    conf_lower = S_t - 1.96*est_se,
+    conf_upper = S_t + 1.96*est_se,
+    adj_conf_lower = pmax(0, conf_lower),
+    adj_conf_upper = pmin(1, conf_upper)
+  )
+```
+
+```{r}
+# Estimate S(t) using the non-parametric KM estimator
+km_fit <- survfit(
+  Surv(date, cens) ~ 1,
+  data = dat,
+  conf.type = "plain",
+  conf.lower = "usual"
+)
+```
+
+```{r}
+summary(km_fit)
+```
+
+Using this approach, we can yield lower confidence limits smaller than 0 or upper
+confidence limits greater than 1. We transform $\hat{S}(t)$:
+
+$$
+\hat{L}(t) = log(-log(S(t)))
+$$
+
+We estimate the standard error of $\hat{L}(t)$ as follows:
+
+```{r}
+L_t <- log(-log(km_estimates$S_t))
+L_t_se <- km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+L_t_lower <- L_t - 1.96*L_t_se
+L_t_upper <- L_t + 1.96*L_t_se
+
+S_t_lower <- exp(-exp(L_t_upper))
+S_t_upper <- exp(-exp(L_t_lower))
+
+S_t_lower
+```
+
+```{r}
+# Estimate S(t) using the non-parametric KM estimator
+km_fit <- survfit(
+  Surv(date, cens) ~ 1,
+  data = dat,
+  conf.type = "log-log"
+)
+```
+
+```{r}
+summary(km_fit)
+```
+
+# Comparing Curves
+
+```{r}
+# Create a sample dataset
+dat <- data.frame(
+  time = c(12, 18, 24, 30, 36, 6, 15, 20, 28, 40, 8, 10, 14, 16, 22, 5, 12, 18, 20, 25),
+  status = c(1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0),
+  group = factor(rep(c("Treatment", "Control"), each = 10))
+)
+```
+
+```{r}
+# Estimate the survival curves using the KM estimator
+km_fit <- survfit(Surv(time, status) ~ group, data = dat)
+```
+
+```{r echo=FALSE}
+summary(km_fit)
+```
+
+Adding a covariate to `survfit()` just splits the data in two to estimate the
+survival curves for both populations using the respective samples.
+
+```{r}
+# Split the dataset and estimate the survival curves
+dat_split <- split(dat, dat$group)
+
+km_fit_split_ctl <- survfit(Surv(time, status) ~ 1, data = dat_split[[1]])
+km_fit_split_trt <- survfit(Surv(time, status) ~ 1, data = dat_split[[2]])
+```
+
+```{r}
+ggsurvplot(km_fit_split_ctl)
+```
+
+```{r}
+ggsurvplot(km_fit_split_trt)
+```
+
+```{r}
+ggsurvplot(km_fit)
+```
+
+We can perform a log-rank (LR) test to compare survival between both groups.
+
+```{r}
+# Compare survival in both groups
+surv_diff <- survdiff(Surv(time, status) ~ group, data = dat)
+```
+
+```{r echo=FALSE}
+surv_diff
+```
+
+```{r}
+# For each time interval (month), get the number at risk, the number of events,
+# and the number of censored observations
+observation_months <- seq(0L, max(dat$time))
+
+r_j <- rep(NA, max(observation_months))
+d_j <- rep(NA, max(observation_months))
+c_j <- rep(NA, max(observation_months))
+
+r_j_trt <- rep(NA, max(observation_months))
+d_j_trt <- rep(NA, max(observation_months))
+c_j_trt <- rep(NA, max(observation_months))
+
+r_j_ctl <- rep(NA, max(observation_months))
+d_j_ctl <- rep(NA, max(observation_months))
+c_j_ctl <- rep(NA, max(observation_months))
+
+for (t in observation_months) {
+  
+  r_j[t + 1] <- sum(dat$time >= t)
+  d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+  c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+  
+  r_j_trt[t + 1] <- sum(
+    dat$time >= t
+    & dat$group == "Treatment"
+  )
+  d_j_trt[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Treatment"
+    & dat$status == 1
+  )
+  c_j_trt[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Treatment"
+    & dat$status == 0
+  )
+  
+  r_j_ctl[t + 1] <- sum(
+    dat$time >= t
+    & dat$group == "Control"
+  )
+  d_j_ctl[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Control"
+    & dat$status == 1
+  )
+  c_j_ctl[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Control"
+    & dat$status == 0
+  )
+  
+}
+
+km_estimates <- tibble(
+  time = observation_months,
+  r_j = r_j,
+  d_j = d_j,
+  c_j = c_j,
+  r_j_trt = r_j_trt,
+  d_j_trt = d_j_trt,
+  c_j_trt = c_j_trt,
+  r_j_ctl = r_j_ctl,
+  d_j_ctl = d_j_ctl,
+  c_j_ctl = c_j_ctl
+)
+
+# Calculate the expected number of events for each group at each time point
+km_estimates <- km_estimates |>
+  mutate(
+    d_j_trt_exp = r_j_trt * (d_j / r_j),
+    v_j_trt = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1)),
+    d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+    v_j_ctl = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1))
+  ) |>
+  filter(d_j > 0)
+```
+
+```{r}
+sum(km_estimates$d_j_ctl)
+sum(km_estimates$d_j_ctl_exp)
+(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+```
+
+```{r}
+sum(km_estimates$d_j_trt)
+sum(km_estimates$d_j_trt_exp)
+(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+```
+
+```{r}
+# Obtain the p-value
+pchisq(q = 1.93, df = 1, lower.tail = FALSE)
+```
+
+```{r}
+# And compare to the one obtained with `survival`
+surv_diff$pvalue
+```
+
+The LR test only tests for a statistically significant difference between the
+groups. It does not estimate the effect size nor a confidence interval. Furthermore,
+if there is cross-over, or in other words, if the proportional hazards assumption
+is violated, the LR test has less power to detect a statistically significant
+difference.
+
+# Proportional Hazards
+
+The PH assumption is quite important when doing survival analysis. The PH
+assumption states that the hazard ratio (HR) is constant over time. For example,
+if the HR for the treatment group is 0.67 (relative to the control group), then,
+at any time point, the hazard in the treatment group is 0.67 times smaller than the
+hazard in the control group.
+
+The estimated survival curves should not cross and the distance between the estimated
+survival curves should be approximately constant on a log scale.
+
+```{r}
+ggsurvplot(km_fit, fun = "cloglog", title = "Log-Log Plot")
+```
+
+We can also calculate the Schoenfeld residuals.
+
+```{r}
+cph_fit <- coxph(Surv(time, status) ~ group, data = dat)
+```
+
+```{r}
+cph_fit
+```
+```{r}
+residuals(cph_fit, type = "schoenfeld")
+```
+
+
+

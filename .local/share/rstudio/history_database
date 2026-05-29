@@ -1,0 +1,1247 @@
+1779446721972:suppressPackageStartupMessages(library(survival))
+1779446722675:suppressPackageStartupMessages(library(tidyverse))
+1779446729771:# Data from Ohio State University Bone Marrow Transplant Unit
+1779446729772:df <- tibble(
+1779446729772:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779446729772:cens = c(1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0)
+1779446729773:)
+1779446732968:df
+1779446972800:# For each time interval (month), get the number at risk, the number of events,
+1779446972801:# and the number of censored observations
+1779446972802:observation_months <- 1L:34L
+1779446972807:for (t in observation_months) {
+1779446972808:d_j <- nrow(df[df$date == t & df$cens == 1])
+1779446972809:c_j <- nrow(df[df$date == t & df$cens == 0])
+1779446972809:r_j <- nrow(df[df$date >= t])
+1779446972810:}
+1779446986098:# For each time interval (month), get the number at risk, the number of events,
+1779446986098:# and the number of censored observations
+1779446986099:observation_months <- 1L:34L
+1779446986103:for (t in observation_months) {
+1779446986105:d_j <- nrow(df[df$date == t && df$cens == 1])
+1779446986105:c_j <- nrow(df[df$date == t && df$cens == 0])
+1779446986106:r_j <- nrow(df[df$date >= t])
+1779446986107:}
+1779446993817:t
+1779446998049:df$date == t
+1779447001569:df$cens == 1
+1779447012489:df$date == t & df$cens == 1
+1779447051871:# For each time interval (month), get the number at risk, the number of events,
+1779447051872:# and the number of censored observations
+1779447051873:observation_months <- 1L:34L
+1779447051878:for (t in observation_months) {
+1779447051879:d_j <- sum(df$date == t & df$cens == 1)
+1779447051879:c_j <- sum(df$date == t & df$cens == 0)
+1779447051880:r_j <- sum(df$date >= t)
+1779447051881:}
+1779447057688:df$date
+1779447097422:t <- 5
+1779447099903:df$date == t
+1779447109652:df$cens == 1
+1779447127889:df$date == t & df$cens == 1
+1779447130828:sum(df$date == t & df$cens == 1)
+1779447149105:df$date == t
+1779447154614:df$cens == 0
+1779447191780:dat <- tibble(
+1779447191781:r_j = r_j,
+1779447191783:d_j = d_j,
+1779447191784:c_j = c_j
+1779447191785:)
+1779447194079:View(dat)
+1779447233327:# For each time interval (month), get the number at risk, the number of events,
+1779447233328:# and the number of censored observations
+1779447233329:observation_months <- 1L:34L
+1779447233334:r_j <- rep(NA, max(observation_months))
+1779447233338:d_j <- rep(NA, max(observation_months))
+1779447233342:c_j <- rep(NA, max(observation_months))
+1779447233347:for (t in observation_months) {
+1779447233349:r_j[t] <- sum(df$date >= t)
+1779447233349:d_j[t] <- sum(df$date == t & df$cens == 1)
+1779447233350:c_j[t] <- sum(df$date == t & df$cens == 0)
+1779447233351:}
+1779447233369:dat <- tibble(
+1779447233370:r_j = r_j,
+1779447233370:d_j = d_j,
+1779447233371:c_j = c_j
+1779447233371:)
+1779447235816:View(dat)
+1779447261882:# For each time interval (month), get the number at risk, the number of events,
+1779447261884:# and the number of censored observations
+1779447261886:observation_months <- 0L:34L
+1779447261896:r_j <- rep(NA, max(observation_months))
+1779447261903:d_j <- rep(NA, max(observation_months))
+1779447261908:c_j <- rep(NA, max(observation_months))
+1779447261912:for (t in observation_months) {
+1779447261914:r_j[t] <- sum(df$date >= t)
+1779447261915:d_j[t] <- sum(df$date == t & df$cens == 1)
+1779447261916:c_j[t] <- sum(df$date == t & df$cens == 0)
+1779447261918:}
+1779447261940:dat <- tibble(
+1779447261941:r_j = r_j,
+1779447261942:d_j = d_j,
+1779447261942:c_j = c_j
+1779447261943:)
+1779447276765:# For each time interval (month), get the number at risk, the number of events,
+1779447276766:# and the number of censored observations
+1779447276767:observation_months <- 0L:34L
+1779447276773:r_j <- rep(NA, max(observation_months))
+1779447276777:d_j <- rep(NA, max(observation_months))
+1779447276780:c_j <- rep(NA, max(observation_months))
+1779447276784:for (t in observation_months) {
+1779447276785:r_j[t] <- sum(df$date >= t)
+1779447276786:d_j[t] <- sum(df$date == t & df$cens == 1)
+1779447276787:c_j[t] <- sum(df$date == t & df$cens == 0)
+1779447276788:}
+1779447276805:dat <- tibble(
+1779447276806:t = observation_months,
+1779447276807:r_j = r_j,
+1779447276807:d_j = d_j,
+1779447276808:c_j = c_j
+1779447276808:)
+1779447290254:# For each time interval (month), get the number at risk, the number of events,
+1779447290256:# and the number of censored observations
+1779447290258:observation_months <- 0L:34L
+1779447290266:r_j <- rep(NA, max(observation_months))
+1779447290270:d_j <- rep(NA, max(observation_months))
+1779447290273:c_j <- rep(NA, max(observation_months))
+1779447290276:for (t in observation_months) {
+1779447290277:r_j[t + 1] <- sum(df$date >= t)
+1779447290278:d_j[t + 1] <- sum(df$date == t & df$cens == 1)
+1779447290279:c_j[t + 1] <- sum(df$date == t & df$cens == 0)
+1779447290280:}
+1779447290294:dat <- tibble(
+1779447290295:t = observation_months,
+1779447290296:r_j = r_j,
+1779447290296:d_j = d_j,
+1779447290297:c_j = c_j
+1779447290298:)
+1779447317392:dat
+1779447337764:dat$d_j / dat$r_j
+1779447393952:# Calculate the hazard. The hazard is the conditional probability of the event
+1779447393953:# occurring at time point t given that the event has not yet occurred by time t.
+1779447393954:dat$hazard <- dat$d_j / dat$r_j
+1779447397080:View(df)
+1779447439153:suppressPackageStartupMessages(library(survival))
+1779447439158:suppressPackageStartupMessages(library(tidyverse))
+1779447439165:# Data from Ohio State University Bone Marrow Transplant Unit
+1779447439166:dat <- tibble(
+1779447439166:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779447439167:cens = c(1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0)
+1779447439168:)
+1779447439174:dat
+1779447439183:# For each time interval (month), get the number at risk, the number of events,
+1779447439184:# and the number of censored observations
+1779447439185:observation_months <- 0L:34L
+1779447439189:r_j <- rep(NA, max(observation_months))
+1779447439192:d_j <- rep(NA, max(observation_months))
+1779447439195:c_j <- rep(NA, max(observation_months))
+1779447439198:for (t in observation_months) {
+1779447439200:r_j[t + 1] <- sum(dat$date >= t)
+1779447439200:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779447439201:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779447439202:}
+1779447439239:km_estimates <- tibble(
+1779447439240:t = observation_months,
+1779447439241:r_j = r_j,
+1779447439242:d_j = d_j,
+1779447439242:c_j = c_j
+1779447439243:)
+1779447439248:# Calculate the hazard. The hazard is the conditional probability of the event
+1779447439249:# occurring at time point t given that the event has not yet occurred by time t.
+1779447439249:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779447441489:View(dat)
+1779447442510:View(km_estimates)
+1779447510956:2/11
+1779447515505:1/8
+1779447777477:install.packages("kable")
+1779447952383:# Estimate S(t)
+1779447952385:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779448002689:# Estimate S(t) using the non-parametric KM estimator
+1779448002691:km_fit <- survfit(Surv(date, cens) ~ 1, data = dat)
+1779448008830:km_fit
+1779448013293:summary(km_fit)
+1779448092269:survminer(km_fit)
+1779448104434:suppressPackageStartupMessages(library(survminer))
+1779448110767:ggsurvplot(km_fit)
+1779448317308:km_estimates
+1779448488525:# Faulty estimation of overall survival
+1779448488527:S_tilde_t <- rep(NA, max(observation_months))
+1779448488533:for (t in observation_months) {
+1779448488534:S_tilde_t[t] <- sum(dat$date > t) / nrow(dat)
+1779448488535:}
+1779448488550:km_estimates$S_tilde_t <- S_tilde_t
+1779448496039:# Faulty estimation of overall survival
+1779448496040:S_tilde_t <- rep(NA, max(observation_months))
+1779448496047:for (t in observation_months) {
+1779448496048:S_tilde_t[t + 1] <- sum(dat$date > t) / nrow(dat)
+1779448496049:}
+1779448496062:km_estimates$S_tilde_t <- S_tilde_t
+1779448559579:# Faulty estimation of overall survival
+1779448559581:S_tilde_t <- rep(NA, max(observation_months))
+1779448559587:for (t in observation_months) {
+1779448559588:S_tilde_t[t + 1] <- cumprod(1 - sum(dat$date > t) / nrow(dat))
+1779448559589:}
+1779448559597:km_estimates$S_tilde_t <- S_tilde_t
+1779448570107:# Faulty estimation of overall survival
+1779448570109:S_tilde_t <- rep(NA, max(observation_months))
+1779448570389:for (t in observation_months) {
+1779448570391:S_tilde_t[t + 1] <- cumprod(1 - sum(dat$date > t) / nrow(dat))
+1779448570393:}
+1779448570724:km_estimates$S_tilde_t <- S_tilde_t
+1779448584209:t
+1779448589900:t <- 0
+1779448595570:dat$date > t
+1779448599493:sum(dat$date > t)
+1779448603711:sum(dat$date > t) / nrow(dat)
+1779448606398:1 - sum(dat$date > t) / nrow(dat)
+1779448622940:# Faulty estimation of overall survival
+1779448622942:S_tilde_t <- rep(NA, max(observation_months))
+1779448622948:for (t in observation_months) {
+1779448622949:S_tilde_t[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779448622950:}
+1779448622958:km_estimates$S_tilde_t <- S_tilde_t
+1779448809561:# Data from the Ohio State University Bone Marrow Transplant Unit
+1779448809561:dat <- tibble(
+1779448809562:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779448809562:cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+1779448809563:)
+1779448810608:# For each time interval (month), get the number at risk, the number of events,
+1779448810610:# and the number of censored observations
+1779448810611:observation_months <- 0L:34L
+1779448810616:r_j <- rep(NA, max(observation_months))
+1779448810622:d_j <- rep(NA, max(observation_months))
+1779448810626:c_j <- rep(NA, max(observation_months))
+1779448810631:for (t in observation_months) {
+1779448810632:r_j[t + 1] <- sum(dat$date >= t)
+1779448810633:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779448810634:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779448810635:}
+1779448810653:km_estimates <- tibble(
+1779448810654:t = observation_months,
+1779448810655:r_j = r_j,
+1779448810656:d_j = d_j,
+1779448810656:c_j = c_j
+1779448810657:)
+1779448812857:View(km_estimates)
+1779448836735:# Calculate the hazard and estimate S(t)
+1779448836737:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779448836740:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779448849173:# Faulty estimation of overall survival
+1779448849175:S_tilde_t <- rep(NA, max(observation_months))
+1779448849182:for (t in observation_months) {
+1779448849183:S_tilde_t[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779448849184:}
+1779448849193:km_estimates$S_tilde_t <- S_tilde_t
+1779449689248:observation_months <- 0L:34L
+1779449689253:S_tilde <- rep(NA, max(observation_months))
+1779449689258:for (t in observation_months) {
+1779449689259:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779449689260:}
+1779449689272:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779449911348:# For each time interval (month), get the number at risk, the number of events,
+1779449911350:# and the number of censored observations
+1779449911352:r_j <- rep(NA, max(observation_months))
+1779449911358:d_j <- rep(NA, max(observation_months))
+1779449911365:c_j <- rep(NA, max(observation_months))
+1779449911370:for (t in observation_months) {
+1779449911372:r_j[t + 1] <- sum(dat$date >= t)
+1779449911372:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779449911373:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779449911374:}
+1779449911392:km_estimates <- tibble(
+1779449911393:t = observation_months,
+1779449911394:r_j = r_j,
+1779449911395:d_j = d_j,
+1779449911396:c_j = c_j
+1779449911398:)
+1779449911407:# Calculate the hazard and estimate S(t)
+1779449911408:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779449911412:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779449935727:suppressPackageStartupMessages(library(knitr))
+1779449935748:suppressPackageStartupMessages(library(survival))
+1779449935749:suppressPackageStartupMessages(library(survminer))
+1779449935751:suppressPackageStartupMessages(library(tidyverse))
+1779449935755:# Data from the Ohio State University Bone Marrow Transplant Unit (no censoring)
+1779449935755:dat <- tibble(
+1779449935756:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779449935757:cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+1779449935758:)
+1779449935769:kable(dat)
+1779449935883:observation_months <- 0L:34L
+1779449935890:S_tilde <- rep(NA, max(observation_months))
+1779449935898:for (t in observation_months) {
+1779449935899:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779449935900:}
+1779449935916:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779449936771:# For each time interval (month), get the number at risk, the number of events,
+1779449936773:# and the number of censored observations
+1779449936774:r_j <- rep(NA, max(observation_months))
+1779449936779:d_j <- rep(NA, max(observation_months))
+1779449936784:c_j <- rep(NA, max(observation_months))
+1779449936789:for (t in observation_months) {
+1779449936790:r_j[t + 1] <- sum(dat$date >= t)
+1779449936791:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779449936791:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779449936792:}
+1779449936809:km_estimates <- add_column(
+1779449936809:km_estimates,
+1779449936810:t = observation_months,
+1779449936811:r_j = r_j,
+1779449936812:d_j = d_j,
+1779449936812:c_j = c_j
+1779449936840:)
+1779449942519:# For each time interval (month), get the number at risk, the number of events,
+1779449942521:# and the number of censored observations
+1779449942523:r_j <- rep(NA, max(observation_months))
+1779449942529:d_j <- rep(NA, max(observation_months))
+1779449942532:c_j <- rep(NA, max(observation_months))
+1779449942536:for (t in observation_months) {
+1779449942537:r_j[t + 1] <- sum(dat$date >= t)
+1779449942537:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779449942538:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779449942539:}
+1779449942552:km_estimates <- add_columns(
+1779449942552:km_estimates,
+1779449942553:t = observation_months,
+1779449942554:r_j = r_j,
+1779449942554:d_j = d_j,
+1779449942555:c_j = c_j
+1779449942556:)
+1779449945586:# For each time interval (month), get the number at risk, the number of events,
+1779449945588:# and the number of censored observations
+1779449945589:r_j <- rep(NA, max(observation_months))
+1779449945594:d_j <- rep(NA, max(observation_months))
+1779449945597:c_j <- rep(NA, max(observation_months))
+1779449945600:for (t in observation_months) {
+1779449945602:r_j[t + 1] <- sum(dat$date >= t)
+1779449945602:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779449945603:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779449945604:}
+1779449945616:km_estimates <- add_column(
+1779449945617:km_estimates,
+1779449945618:t = observation_months,
+1779449945618:r_j = r_j,
+1779449945619:d_j = d_j,
+1779449945619:c_j = c_j
+1779449945620:)
+1779449949537:?add_column
+1779449980671:suppressPackageStartupMessages(library(knitr))
+1779449980675:suppressPackageStartupMessages(library(survival))
+1779449980677:suppressPackageStartupMessages(library(survminer))
+1779449980680:suppressPackageStartupMessages(library(tidyverse))
+1779449980684:# Data from the Ohio State University Bone Marrow Transplant Unit (no censoring)
+1779449980685:dat <- tibble(
+1779449980686:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779449980686:cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+1779449980687:)
+1779449980691:kable(dat)
+1779449980712:observation_months <- 0L:34L
+1779449980717:S_tilde <- rep(NA, max(observation_months))
+1779449980720:for (t in observation_months) {
+1779449980721:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779449980722:}
+1779449980732:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779449988695:# For each time interval (month), get the number at risk, the number of events,
+1779449988696:# and the number of censored observations
+1779449988698:r_j <- rep(NA, max(observation_months))
+1779449988933:d_j <- rep(NA, max(observation_months))
+1779449989122:c_j <- rep(NA, max(observation_months))
+1779449989816:for (t in observation_months) {
+1779449989819:r_j[t + 1] <- sum(dat$date >= t)
+1779449989820:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779449989821:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779449989822:}
+1779449994950:length(r_j)
+1779450013768:# For each time interval (month), get the number at risk, the number of events,
+1779450013770:# and the number of censored observations
+1779450013772:r_j <- rep(NA, max(observation_months))
+1779450013777:d_j <- rep(NA, max(observation_months))
+1779450013781:c_j <- rep(NA, max(observation_months))
+1779450013785:for (t in observation_months) {
+1779450013786:r_j[t + 1] <- sum(dat$date >= t)
+1779450013787:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779450013787:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779450013788:}
+1779450013803:km_estimates <- add_column(
+1779450013804:km_estimates,
+1779450013804:r_j = r_j,
+1779450013805:d_j = d_j,
+1779450013805:c_j = c_j,
+1779450013806:.before = "S_tilde_t"
+1779450013807:)
+1779450020820:# For each time interval (month), get the number at risk, the number of events,
+1779450020822:# and the number of censored observations
+1779450020823:r_j <- rep(NA, max(observation_months))
+1779450020829:d_j <- rep(NA, max(observation_months))
+1779450020833:c_j <- rep(NA, max(observation_months))
+1779450020836:for (t in observation_months) {
+1779450020838:r_j[t + 1] <- sum(dat$date >= t)
+1779450020838:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779450020839:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779450020840:}
+1779450020855:km_estimates <- add_column(
+1779450020856:km_estimates,
+1779450020857:r_j = r_j,
+1779450020857:d_j = d_j,
+1779450020857:c_j = c_j,
+1779450020858:.before = "S_tilde"
+1779450020858:)
+1779450020862:# Calculate the hazard and estimate S(t)
+1779450020863:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779450020865:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779464632807:suppressPackageStartupMessages(library(kabelExtra))
+1779464637744:suppressPackageStartupMessages(library(kableExtra))
+1779464644901:install.packages("kableExtra")
+1779464827782:suppressPackageStartupMessages(library(kableExtra))
+1779464827901:suppressPackageStartupMessages(library(knitr))
+1779464827904:suppressPackageStartupMessages(library(survival))
+1779464827907:suppressPackageStartupMessages(library(survminer))
+1779464827910:suppressPackageStartupMessages(library(tidyverse))
+1779464827918:# Data from the Ohio State University Bone Marrow Transplant Unit
+1779464827929:dat <- tibble(
+1779464827930:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779464827930:cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+1779464827931:)
+1779464827948:kable(dat)
+1779464827979:observation_months <- 0L:34L
+1779464827984:S_tilde <- rep(NA, max(observation_months))
+1779464827988:for (t in observation_months) {
+1779464827988:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779464827989:}
+1779464828002:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779464828008:# For each time interval (month), get the number at risk, the number of events,
+1779464828009:# and the number of censored observations
+1779464828010:r_j <- rep(NA, max(observation_months))
+1779464828014:d_j <- rep(NA, max(observation_months))
+1779464828018:c_j <- rep(NA, max(observation_months))
+1779464828023:for (t in observation_months) {
+1779464828025:r_j[t + 1] <- sum(dat$date >= t)
+1779464828025:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779464828026:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779464828027:}
+1779464828050:km_estimates <- add_column(
+1779464828051:km_estimates,
+1779464828051:r_j = r_j,
+1779464828051:d_j = d_j,
+1779464828052:c_j = c_j,
+1779464828052:.before = "S_tilde"
+1779464828052:)
+1779464828056:# Calculate the hazard and estimate S(t)
+1779464828057:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779464828059:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779464828063:kable(km_estimates)
+1779464828346:# Data from the Ohio State University Bone Marrow Transplant Unit
+1779464828347:dat <- tibble(
+1779464828347:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779464828348:cens = c(1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0)
+1779464828349:)
+1779464831013:observation_months <- 0L:34L
+1779464831020:S_tilde <- rep(NA, max(observation_months))
+1779464831024:for (t in observation_months) {
+1779464831025:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779464831025:}
+1779464831037:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779464836458:# For each time interval (month), get the number at risk, the number of events,
+1779464836459:# and the number of censored observations
+1779464836460:r_j <- rep(NA, max(observation_months))
+1779464836464:d_j <- rep(NA, max(observation_months))
+1779464836467:c_j <- rep(NA, max(observation_months))
+1779464836471:for (t in observation_months) {
+1779464836472:r_j[t + 1] <- sum(dat$date >= t)
+1779464836472:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779464836473:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779464836474:}
+1779464836511:km_estimates <- add_column(
+1779464836512:km_estimates,
+1779464836512:r_j = r_j,
+1779464836513:d_j = d_j,
+1779464836513:c_j = c_j,
+1779464836514:.before = "S_tilde"
+1779464836514:)
+1779464836517:# Calculate the hazard and estimate S(t)
+1779464836518:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779464836520:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779464838300:View(km_estimates)
+1779465398276:# Calculate the estimated standard error using the Greenwood formula
+1779465398277:km_estimates
+1779465499423:# Calculate the estimated standard error using the Greenwood formula
+1779465499425:km_estimates$S_t^2
+1779465519403:# Calculate the estimated standard error using the Greenwood formula
+1779465519405:fac_1 <- km_estimates$S_t^2
+1779465545265:km_estimates$d_j / (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j))
+1779465549438:cumsum(km_estimates$d_j / (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j)))
+1779465553137:fac_2 <- cumsum(km_estimates$d_j / (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j)))
+1779465580853:km_estimates <- add_column(km_estimates, est_var = fac_1 * fac_2)
+1779465603227:km_estimates <- add_column(km_estimates, est_se = sqrt(est_var))
+1779465618904:km_estimates <- mutate(km_estimates, est_se = sqrt(est_var))
+1779465635208:km_fit
+1779465647926:?survfit
+1779465657617:?surfvit.formula
+1779465662799:?survfit.formula
+1779465682947:# Estimate S(t) using the non-parametric KM estimator
+1779465682948:km_fit <- survfit(Surv(date, cens) ~ 1, data = dat, conf.type = "plain")
+1779465689773:km_fit
+1779465694782:summary(km_fit)
+1779465773362:# Estimate S(t) using the non-parametric KM estimator
+1779465773363:km_fit <- survfit(
+1779465773364:Surv(date, cens) ~ 1,
+1779465773366:data = dat,
+1779465773367:conf.type = "plain",
+1779465773367:conf.lower = "usual"
+1779465773368:)
+1779465774841:summary(km_fit)
+1779465847515:km_estimates <- km_estimates |>
+1779465847517:mutate(
+1779465847519:est_se = sqrt(est_var),
+1779465847520:conf_lower = S_t - 1.96*est_se,
+1779465847522:conf_upper = S_t + 1.96*est_se
+1779465847523:)
+1779465851476:summary(km_fit)
+1779466508971:# Calculate the estimated standard error using the Greenwood formula
+1779466508973:fac_1 <- km_estimates$S_t^2
+1779466508981:fac_2 <- cumsum(km_estimates$d_j / (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j)))
+1779466508985:km_estimates <- add_column(km_estimates, est_var = fac_1 * fac_2)
+1779466513162:km_estimates <- km_estimates |>
+1779466513163:mutate(
+1779466513165:est_se = sqrt(est_var),
+1779466513166:conf_lower = S_t - 1.96*est_se,
+1779466513167:conf_upper = S_t + 1.96*est_se,
+1779466513168:adj_conf_lower = pmin(0, conf_lower),
+1779466513168:adj_conf_upper = pmax(1, conf_upper)
+1779466513170:)
+1779466530680:km_estimates <- km_estimates |>
+1779466530681:mutate(
+1779466530682:est_se = sqrt(est_var),
+1779466530683:conf_lower = S_t - 1.96*est_se,
+1779466530684:conf_upper = S_t + 1.96*est_se,
+1779466530685:adj_conf_lower = pmax(0, conf_lower),
+1779466530686:adj_conf_upper = pmin(1, conf_upper)
+1779466530686:)
+1779466555778:summary(km_fit)
+1779466967726:km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+1779467004747:L_t <- log(-log(km_estimates$S_t))
+1779467005147:L_t_se <- km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+1779467024220:L_t <- log(-log(km_estimates$S_t))
+1779467024227:L_t_se <- km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+1779467024232:L_t_lower <- L_t - 1.96*L_t_se
+1779467024235:L_t_upper <- L_t + 1.96*L_t_se
+1779467054438:L_t <- log(-log(km_estimates$S_t))
+1779467054447:L_t_se <- km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+1779467054452:L_t_lower <- L_t - 1.96*L_t_se
+1779467054456:L_t_upper <- L_t + 1.96*L_t_se
+1779467054460:S_t_lower <- exp(-exp(L_t_upper))
+1779467054463:S_t_upper <- exp(-exp(L_t_lower))
+1779467062099:S_t_lower
+1779467076225:# Estimate S(t) using the non-parametric KM estimator
+1779467076227:km_fit <- survfit(
+1779467076228:Surv(date, cens) ~ 1,
+1779467076229:data = dat,
+1779467076230:conf.type = "plain",
+1779467076231:conf.lower = "log-log"
+1779467076231:)
+1779467084928:# Estimate S(t) using the non-parametric KM estimator
+1779467084930:km_fit <- survfit(
+1779467084931:Surv(date, cens) ~ 1,
+1779467084932:data = dat,
+1779467084934:conf.type = "log-log"
+1779467084935:)
+1779467086647:summary(km_fit)
+1779827727754:renv::init()
+1779828136075:# Get a sample dataset
+1779828136076:dat <- tibble(
+1779828136076:x = rep(c("A", "B"), each = 10)
+1779828136076:)
+1779828140877:suppressPackageStartupMessages(library(kableExtra))
+1779828141121:suppressPackageStartupMessages(library(knitr))
+1779828141142:suppressPackageStartupMessages(library(survival))
+1779828141813:suppressPackageStartupMessages(library(survminer))
+1779828142210:suppressPackageStartupMessages(library(tidyverse))
+1779828142564:# Data from the Ohio State University Bone Marrow Transplant Unit
+1779828142564:dat <- tibble(
+1779828142565:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779828142565:cens = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+1779828142566:)
+1779828142571:kable(dat)
+1779828142730:# Use a naive non-parametric estimator to estimate the survival function
+1779828142731:observation_months <- 0L:34L
+1779828142762:S_tilde <- rep(NA, max(observation_months))
+1779828142764:for (t in observation_months) {
+1779828142765:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779828142765:}
+1779828142776:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779828142784:# For each time interval (month), get the number at risk, the number of events,
+1779828142784:# and the number of censored observations
+1779828142785:r_j <- rep(NA, max(observation_months))
+1779828142789:d_j <- rep(NA, max(observation_months))
+1779828142792:c_j <- rep(NA, max(observation_months))
+1779828142794:for (t in observation_months) {
+1779828142795:r_j[t + 1] <- sum(dat$date >= t)
+1779828142796:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779828142796:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779828142797:}
+1779828142819:km_estimates <- add_column(
+1779828142820:km_estimates,
+1779828142820:r_j = r_j,
+1779828142821:d_j = d_j,
+1779828142821:c_j = c_j,
+1779828142822:.before = "S_tilde"
+1779828142822:)
+1779828142825:# Calculate the hazard and estimate S(t)
+1779828142825:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779828142828:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779828142833:kable(km_estimates)
+1779828143084:# Data from the Ohio State University Bone Marrow Transplant Unit
+1779828143086:dat <- tibble(
+1779828143087:date = c(1, 2, 2, 2, 3, 5, 6, 7, 8, 16, 17, 34),
+1779828143087:cens = c(1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0)
+1779828143088:)
+1779828143099:kable(dat)
+1779828143121:# Use a naive non-parametric estimator to estimate the survival function
+1779828143121:observation_months <- 0L:34L
+1779828143126:S_tilde <- rep(NA, max(observation_months))
+1779828143129:for (t in observation_months) {
+1779828143130:S_tilde[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779828143130:}
+1779828143150:km_estimates <- tibble(t = observation_months, S_tilde = S_tilde)
+1779828143157:# For each time interval (month), get the number at risk, the number of events,
+1779828143158:# and the number of censored observations
+1779828143158:r_j <- rep(NA, max(observation_months))
+1779828143162:d_j <- rep(NA, max(observation_months))
+1779828143165:c_j <- rep(NA, max(observation_months))
+1779828143170:for (t in observation_months) {
+1779828143171:r_j[t + 1] <- sum(dat$date >= t)
+1779828143171:d_j[t + 1] <- sum(dat$date == t & dat$cens == 1)
+1779828143172:c_j[t + 1] <- sum(dat$date == t & dat$cens == 0)
+1779828143173:}
+1779828143199:km_estimates <- add_column(
+1779828143201:km_estimates,
+1779828143201:r_j = r_j,
+1779828143202:d_j = d_j,
+1779828143202:c_j = c_j,
+1779828143203:.before = "S_tilde"
+1779828143203:)
+1779828143212:# Calculate the hazard and estimate S(t)
+1779828143212:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779828143213:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779828143217:# Calculate the hazard
+1779828143218:km_estimates$hazard <- km_estimates$d_j / km_estimates$r_j
+1779828143225:# Estimate S(t)
+1779828143226:km_estimates$S_t <- cumprod(1 - km_estimates$hazard)
+1779828143233:# Estimate S(t) using the non-parametric KM estimator
+1779828143234:km_fit <- survfit(Surv(date, cens) ~ 1, data = dat)
+1779828143246:summary(km_fit)
+1779828143254:ggsurvplot(km_fit)
+1779828144326:# Faulty estimation of overall survival
+1779828144328:S_tilde_t <- rep(NA, max(observation_months))
+1779828144339:for (t in observation_months) {
+1779828144340:S_tilde_t[t + 1] <- cumprod(sum(dat$date > t) / nrow(dat))
+1779828144341:}
+1779828144360:km_estimates$S_tilde_t <- S_tilde_t
+1779828144365:kable(km_estimates)
+1779828144477:# Calculate the estimated standard error using the Greenwood formula
+1779828144477:fac_1 <- km_estimates$S_t^2
+1779828144481:fac_2 <- cumsum(
+1779828144482:km_estimates$d_j
+1779828144483:/ (km_estimates$r_j * (km_estimates$r_j - km_estimates$d_j))
+1779828144484:)
+1779828144488:km_estimates <- km_estimates |>
+1779828144489:add_column(est_var = fac_1 * fac_2) |>
+1779828144489:mutate(
+1779828144490:est_se = sqrt(est_var),
+1779828144490:conf_lower = S_t - 1.96*est_se,
+1779828144490:conf_upper = S_t + 1.96*est_se,
+1779828144491:adj_conf_lower = pmax(0, conf_lower),
+1779828144491:adj_conf_upper = pmin(1, conf_upper)
+1779828144491:)
+1779828144501:# Estimate S(t) using the non-parametric KM estimator
+1779828144501:km_fit <- survfit(
+1779828144502:Surv(date, cens) ~ 1,
+1779828144502:data = dat,
+1779828144503:conf.type = "plain",
+1779828144503:conf.lower = "usual"
+1779828144503:)
+1779828144517:summary(km_fit)
+1779828144524:L_t <- log(-log(km_estimates$S_t))
+1779828144527:L_t_se <- km_estimates$est_se / (km_estimates$S_t * abs(log(km_estimates$S_t)))
+1779828144530:L_t_lower <- L_t - 1.96*L_t_se
+1779828144535:L_t_upper <- L_t + 1.96*L_t_se
+1779828144542:S_t_lower <- exp(-exp(L_t_upper))
+1779828144554:S_t_upper <- exp(-exp(L_t_lower))
+1779828144565:S_t_lower
+1779828144572:# Estimate S(t) using the non-parametric KM estimator
+1779828144573:km_fit <- survfit(
+1779828144573:Surv(date, cens) ~ 1,
+1779828144574:data = dat,
+1779828144574:conf.type = "log-log"
+1779828144575:)
+1779828144590:summary(km_fit)
+1779828144597:# Get a sample dataset
+1779828144597:dat <- tibble(
+1779828144598:x = rep(c("A", "B"), each = 10)
+1779828144598:)
+1779828144602:dat
+1779828190694:# Get a sample dataset
+1779828190696:dat <- tibble(
+1779828190697:x = rep(c("A", "B"), each = 10),
+1779828190698:y = c(
+1779828190699:12,
+1779828190700:18,
+1779828190701:24,
+1779828190701:30,
+1779828190702:36,
+1779828190703:6,
+1779828190703:15,
+1779828190704:20,
+1779828190704:28,
+1779828190705:40,
+1779828190706:8,
+1779828190706:10,
+1779828190706:14,
+1779828190707:16,
+1779828190707:22,
+1779828190707:5,
+1779828190708:12,
+1779828190708:18,
+1779828190708:20,
+1779828190709:25
+1779828190709:),
+1779828190709:ind = c(
+1779828190709:1,
+1779828190710:1,
+1779828190710:0,
+1779828190710:1,
+1779828190711:0,
+1779828190711:1,
+1779828190711:1,
+1779828190712:0,
+1779828190712:1,
+1779828190712:0,
+1779828190713:1,
+1779828190713:1,
+1779828190713:1,
+1779828190714:1,
+1779828190714:0,
+1779828190714:1,
+1779828190715:1,
+1779828190715:0,
+1779828190715:1,
+1779828190715:0
+1779828190716:)
+1779828190716:)
+1779828191993:dat
+1779828230880:km_fit <- survival(
+1779828230881:Surv(y, ind) ~ x,
+1779828230882:data = dat
+1779828230883:)
+1779828237367:km_fit <- survfit(
+1779828237367:Surv(y, ind) ~ x,
+1779828237368:data = dat
+1779828237368:)
+1779828242227:km_fit <- survfit(Surv(y, ind) ~ x, data = dat)
+1779828248027:summary(km_fit)
+1779828273144:dat_split <- split(dat, x)
+1779828279722:dat_split <- split(dat, dat$x)
+1779828283493:dat_split
+1779828286032:dat_split[[1]]
+1779828307583:summary(survfit(Surv, y, ind) ~ 1, data = dat_split[[1]])
+1779828335789:summary(survfit(Surv(y, ind) ~ 1, data = dat_split[[1]]))
+1779828427592:ggsurvplot(km_fit)
+1779828691929:# Get a sample dataset
+1779828691930:# Create a data frame
+1779828691930:dat <- data.frame(
+1779828691931:time = c(12, 18, 24, 30, 36, 6, 15, 20, 28, 40, 8, 10, 14, 16, 22, 5, 12, 18, 20, 25),
+1779828691932:status = c(1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0),
+1779828691932:group = factor(rep(c("Treatment", "Control"), each = 10))
+1779828691932:)
+1779828704305:km_fit <- survfit(Surv(time, status) ~ group, data = dat)
+1779828706074:summary(km_fit)
+1779828710808:dat_split <- split(dat, dat$group)
+1779828716196:summary(survfit(Surv(time, status) ~ 1, data = dat_split[[1]]))
+1779828721788:ggsurvplot(km_fit)
+1779828774580:# Compare survival in both groups
+1779828774581:surv_diff <- survdiff(Surv(time, status) ~ group, data = dat)
+1779828780879:surv_diff
+1779828907937:dat
+1779828917095:dat |>
+1779828917096:arrange(time)
+1779828951832:dat |>
+1779828951833:filter(status == 1) |>
+1779828951833:arrange(time)
+1779828973836:dat |>
+1779828973837:filter(status == 1) |>
+1779828973838:arrange(time) |>
+1779828973838:group_by("time", "group") |>
+1779828973839:mutate(n_by_group = n())
+1779828987922:dat |>
+1779828987923:filter(status == 1) |>
+1779828987924:arrange(time) |>
+1779828987925:group_by(c("time", "group")) |>
+1779828987925:mutate(n_by_group = n())
+1779828999465:?group_by
+1779829021896:dat |>
+1779829021897:filter(status == 1) |>
+1779829021898:arrange(time) |>
+1779829021898:group_by(time, group) |>
+1779829021899:mutate(n_by_group = n())
+1779829037630:n_by_group <- dat |>
+1779829037631:filter(status == 1) |>
+1779829037632:arrange(time) |>
+1779829037633:group_by(time, group) |>
+1779829037633:mutate(n_by_group = n())
+1779829066280:dat |>
+1779829066281:filter(status == 1) |>
+1779829066282:arrange(time) |>
+1779829066283:group_by(time) |>
+1779829066284:mutate(n_by_tp = n())
+1779829074799:n_by_group <- dat |>
+1779829074800:filter(status == 1) |>
+1779829074801:arrange(time) |>
+1779829074802:group_by(time, group) |>
+1779829074803:mutate(n_by_group = n())
+1779829074821:n_by_tp <- dat |>
+1779829074821:filter(status == 1) |>
+1779829074822:arrange(time) |>
+1779829074822:group_by(time) |>
+1779829074823:mutate(n_by_tp = n())
+1779829083210:n_by_tp
+1779829142673:n_by_tp |>
+1779829142674:mutate(
+1779829142674:N = nrow(dat),
+1779829142675:n_at_risk = N - lag(N)
+1779829142675:)
+1779829155686:n_by_tp |>
+1779829155687:mutate(
+1779829155688:N = nrow(dat),
+1779829155689:n_at_risk = N - head(N)
+1779829155690:)
+1779829253385:n_by_tp |>
+1779829253385:mutate(
+1779829253386:N = nrow(dat),
+1779829253387:n_at_risk = N - lag(N, default = 0)
+1779829253387:)
+1779829416940:n_by_tp |>
+1779829416941:mutate(
+1779829416941:N = nrow(dat),
+1779829416942:n_at_risk = nrow(dat) - cumsum(dat$n_by_tp[row_number()])
+1779829416942:)
+1779829471023:nrow(dat),
+1779829476254:n_by_tp |>
+1779829476256:mutate(
+1779829476257:N = nrow(dat),
+1779829476258:n_at_risk = ifelse(
+1779829476259:row_number() == 1,
+1779829476260:nrow(dat),
+1779829476261:nrow(dat) - cumsum(dat$n_by_tp[row_number()])
+1779829476262:)
+1779829476263:)
+1779829490232:n_by_tp |>
+1779829490233:mutate(
+1779829490234:N = nrow(dat),
+1779829490235:n_at_risk = ifelse(
+1779829490236:row_number() == 1,
+1779829490236:nrow(dat),
+1779829490237:nrow(dat) - cumsum(dat$n_by_tp[1L:row_number()])
+1779829490237:)
+1779829490238:)
+1779829550659:max(dat$time)
+1779829564039:# For each time interval (month), get the number at risk, the number of events,
+1779829564040:# and the number of censored observations
+1779829564041:observation_months <_ max(dat$time)
+1779829564176:r_j <- rep(NA, max(observation_months))
+1779829564352:d_j <- rep(NA, max(observation_months))
+1779829564695:c_j <- rep(NA, max(observation_months))
+1779829566288:# For each time interval (month), get the number at risk, the number of events,
+1779829566289:# and the number of censored observations
+1779829566290:observation_months <_ max(dat$time)
+1779829571043:# For each time interval (month), get the number at risk, the number of events,
+1779829571044:# and the number of censored observations
+1779829571045:observation_months <- max(dat$time)
+1779829571429:r_j <- rep(NA, max(observation_months))
+1779829571596:d_j <- rep(NA, max(observation_months))
+1779829571734:c_j <- rep(NA, max(observation_months))
+1779829576481:observation_months
+1779829598053:for (t in observation_months) {
+1779829598055:r_j[t + 1] <- sum(dat$time >= t)
+1779829598056:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829598057:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829598059:}
+1779829625927:km_estimates <- tibble(
+1779829625928:time = observation_months,
+1779829625929:r_j = r_j,
+1779829625930:d_j = d_j,
+1779829625931:c_j = c_j
+1779829625932:)
+1779829627932:View(km_estimates)
+1779829640465:# For each time interval (month), get the number at risk, the number of events,
+1779829640466:# and the number of censored observations
+1779829640466:observation_months <- max(dat$time)
+1779829640637:r_j <- rep(NA, max(observation_months))
+1779829640805:d_j <- rep(NA, max(observation_months))
+1779829640975:c_j <- rep(NA, max(observation_months))
+1779829641263:for (t in 1L:observation_months) {
+1779829641266:r_j[t + 1] <- sum(dat$time >= t)
+1779829641268:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829641269:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829641271:}
+1779829641957:km_estimates <- tibble(
+1779829641958:time = observation_months,
+1779829641960:r_j = r_j,
+1779829641961:d_j = d_j,
+1779829641962:c_j = c_j
+1779829641963:)
+1779829643641:View(km_estimates)
+1779829669572:# For each time interval (month), get the number at risk, the number of events,
+1779829669573:# and the number of censored observations
+1779829669574:observation_months <- seq(1L, max(dat$time))
+1779829670529:r_j <- rep(NA, max(observation_months))
+1779829670683:d_j <- rep(NA, max(observation_months))
+1779829670845:c_j <- rep(NA, max(observation_months))
+1779829671093:for (t in observation_months) {
+1779829671096:r_j[t + 1] <- sum(dat$time >= t)
+1779829671097:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829671099:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829671101:}
+1779829673592:View(km_estimates)
+1779829679250:# For each time interval (month), get the number at risk, the number of events,
+1779829679252:# and the number of censored observations
+1779829679253:observation_months <- seq(1L, max(dat$time))
+1779829685521:observation_months
+1779829695451:r_j <- rep(NA, max(observation_months))
+1779829695721:d_j <- rep(NA, max(observation_months))
+1779829695888:c_j <- rep(NA, max(observation_months))
+1779829699097:r_j
+1779829702222:d_j
+1779829703930:c_j
+1779829707171:for (t in observation_months) {
+1779829707173:r_j[t + 1] <- sum(dat$time >= t)
+1779829707175:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829707176:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829707178:}
+1779829709486:r_jr_j
+1779829711089:r_j
+1779829719064:# For each time interval (month), get the number at risk, the number of events,
+1779829719066:# and the number of censored observations
+1779829719066:observation_months <- seq(0L, max(dat$time))
+1779829719318:r_j <- rep(NA, max(observation_months))
+1779829719499:d_j <- rep(NA, max(observation_months))
+1779829719684:c_j <- rep(NA, max(observation_months))
+1779829719986:for (t in observation_months) {
+1779829719989:r_j[t + 1] <- sum(dat$time >= t)
+1779829719990:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829719991:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829719993:}
+1779829723251:View(km_estimates)
+1779829732170:km_estimates <- tibble(
+1779829732171:time = observation_months,
+1779829732172:r_j = r_j,
+1779829732173:d_j = d_j,
+1779829732174:c_j = c_j
+1779829732174:)
+1779829733385:View(km_estimates)
+1779829808061:# For each time interval (month), get the number at risk, the number of events,
+1779829808063:# and the number of censored observations
+1779829808064:observation_months <- seq(0L, max(dat$time))
+1779829808326:r_j <- rep(NA, max(observation_months))
+1779829808527:d_j <- rep(NA, max(observation_months))
+1779829808699:c_j <- rep(NA, max(observation_months))
+1779829808869:r_j_trt <- rep(NA, max(observation_months))
+1779829809083:d_j_trt <- rep(NA, max(observation_months))
+1779829809255:c_j_trt <- rep(NA, max(observation_months))
+1779829809428:r_j_ctl <- rep(NA, max(observation_months))
+1779829809657:d_j_ctl <- rep(NA, max(observation_months))
+1779829809877:c_j_ctl <- rep(NA, max(observation_months))
+1779829836209:View(dat)
+1779829882690:# For each time interval (month), get the number at risk, the number of events,
+1779829882691:# and the number of censored observations
+1779829882692:observation_months <- seq(0L, max(dat$time))
+1779829882917:r_j <- rep(NA, max(observation_months))
+1779829883073:d_j <- rep(NA, max(observation_months))
+1779829883220:c_j <- rep(NA, max(observation_months))
+1779829883453:r_j_trt <- rep(NA, max(observation_months))
+1779829883605:d_j_trt <- rep(NA, max(observation_months))
+1779829883775:c_j_trt <- rep(NA, max(observation_months))
+1779829883997:r_j_ctl <- rep(NA, max(observation_months))
+1779829884193:d_j_ctl <- rep(NA, max(observation_months))
+1779829884368:c_j_ctl <- rep(NA, max(observation_months))
+1779829884611:for (t in observation_months) {
+1779829884615:r_j[t + 1] <- sum(dat$time >= t)
+1779829884617:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829884618:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829884621:r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+1779829884622:d_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment" & dat$status == 1)
+1779829884624:c_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment" & dat$status == 0)
+1779829884627:r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+1779829884628:d_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control" & dat$status == 1)
+1779829884630:c_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control" & dat$status == 0)
+1779829884632:}
+1779829912839:km_estimates <- tibble(
+1779829912840:time = observation_months,
+1779829912841:r_j = r_j,
+1779829912841:d_j = d_j,
+1779829912842:c_j = c_j,
+1779829912842:r_j_trt = r_j_trt,
+1779829912843:d_j_trt = d_j_trt,
+1779829912844:c_j_trt = c_j_trt,
+1779829912844:r_j_ctl = r_j_ctl,
+1779829912844:d_j_ctl = d_j_ctl,
+1779829912845:c_j_ctl = c_j_ctl
+1779829912845:)
+1779829915169:View(km_estimates)
+1779829949917:# For each time interval (month), get the number at risk, the number of events,
+1779829949919:# and the number of censored observations
+1779829949920:observation_months <- seq(0L, max(dat$time))
+1779829950080:r_j <- rep(NA, max(observation_months))
+1779829950221:d_j <- rep(NA, max(observation_months))
+1779829950381:c_j <- rep(NA, max(observation_months))
+1779829950660:r_j_trt <- rep(NA, max(observation_months))
+1779829950833:d_j_trt <- rep(NA, max(observation_months))
+1779829951000:c_j_trt <- rep(NA, max(observation_months))
+1779829951160:r_j_ctl <- rep(NA, max(observation_months))
+1779829951535:d_j_ctl <- rep(NA, max(observation_months))
+1779829951687:c_j_ctl <- rep(NA, max(observation_months))
+1779829952022:for (t in observation_months) {
+1779829952025:r_j[t + 1] <- sum(dat$time >= t)
+1779829952026:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779829952027:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779829952029:r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+1779829952030:d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+1779829952030:c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+1779829952032:r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+1779829952033:d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+1779829952034:c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+1779829952035:}
+1779829954151:km_estimates <- tibble(
+1779829954153:time = observation_months,
+1779829954154:r_j = r_j,
+1779829954156:d_j = d_j,
+1779829954157:c_j = c_j,
+1779829954158:r_j_trt = r_j_trt,
+1779829954159:d_j_trt = d_j_trt,
+1779829954160:c_j_trt = c_j_trt,
+1779829954160:r_j_ctl = r_j_ctl,
+1779829954164:d_j_ctl = d_j_ctl,
+1779829954166:c_j_ctl = c_j_ctl
+1779829954167:)
+1779830036243:# Calculate the expected number of events for each group at each time point
+1779830036244:km_estimates
+1779830075891:# Calculate the expected number of events for each group at each time point
+1779830075892:km_estimates
+1779830157431:# For each time interval (month), get the number at risk, the number of events,
+1779830157433:# and the number of censored observations
+1779830157434:observation_months <- seq(0L, max(dat$time))
+1779830157439:r_j <- rep(NA, max(observation_months))
+1779830157442:d_j <- rep(NA, max(observation_months))
+1779830157445:c_j <- rep(NA, max(observation_months))
+1779830157448:r_j_trt <- rep(NA, max(observation_months))
+1779830157450:d_j_trt <- rep(NA, max(observation_months))
+1779830157454:c_j_trt <- rep(NA, max(observation_months))
+1779830157457:r_j_ctl <- rep(NA, max(observation_months))
+1779830157460:d_j_ctl <- rep(NA, max(observation_months))
+1779830157463:c_j_ctl <- rep(NA, max(observation_months))
+1779830157468:for (t in observation_months) {
+1779830157470:r_j[t + 1] <- sum(dat$time >= t)
+1779830157471:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779830157472:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779830157473:r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+1779830157474:d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+1779830157474:c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+1779830157476:r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+1779830157476:d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+1779830157477:c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+1779830157478:}
+1779830157547:km_estimates <- tibble(
+1779830157548:time = observation_months,
+1779830157549:r_j = r_j,
+1779830157549:d_j = d_j,
+1779830157550:c_j = c_j,
+1779830157551:r_j_trt = r_j_trt,
+1779830157552:d_j_trt = d_j_trt,
+1779830157552:c_j_trt = c_j_trt,
+1779830157553:r_j_ctl = r_j_ctl,
+1779830157553:d_j_ctl = d_j_ctl,
+1779830157554:c_j_ctl = c_j_ctl
+1779830157555:)
+1779830157558:# Calculate the expected number of events for each group at each time point
+1779830157559:km_estimates |>
+1779830157560:mutate(
+1779830157560:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830157561:d_j_ctl_exp = r_j_ctl * (d_j / r_j)
+1779830157561:)
+1779830163021:# Calculate the expected number of events for each group at each time point
+1779830163023:km_estimates <- km_estimates |>
+1779830163025:mutate(
+1779830163026:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830163027:d_j_ctl_exp = r_j_ctl * (d_j / r_j)
+1779830163028:)
+1779830210327:sum(km_estimates$d_j_trt)
+1779830224717:sum(km_estimates$d_j_trt_exp)
+1779830226556:sum(km_estimates$d_j_trt)
+1779830226723:sum(km_estimates$d_j_trt_exp)
+1779830228773:sum(km_estimates$d_j_trt)
+1779830228776:sum(km_estimates$d_j_trt_exp)
+1779830243201:sum(km_estimates$d_j_ctl)
+1779830243203:sum(km_estimates$d_j_ctl_exp)
+1779830397349:# Calculate the expected number of events for each group at each time point
+1779830397350:km_estimates <- km_estimates |>
+1779830397351:mutate(
+1779830397352:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830397352:v_j_trt = r_j_trt * (r_j_ctl / r_j) * ((r_j - d_j) / (r_j - 1)),
+1779830397353:d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+1779830397353:v_j_ctl = r_j_ctl * (r_j_trt / r_j) * ((r_j - d_j) / (r_j - 1)),
+1779830397354:)
+1779830418357:sum(km_estimates$d_j_ctl)
+1779830418361:sum(km_estimates$d_j_ctl_exp)
+1779830418364:sum(km_estimates$d_j_ctl_exp) / sum(km_estimates$v_j_ctl)
+1779830423855:View(km_estimates)
+1779830440881:sum(km_estimates$d_j_ctl)
+1779830440884:sum(km_estimates$d_j_ctl_exp)
+1779830440886:sum(km_estimates$d_j_ctl_exp) / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830484735:sum(km_estimates$d_j_ctl)
+1779830484738:sum(km_estimates$d_j_ctl_exp)
+1779830484740:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830522378:sum(km_estimates$d_j_trt)
+1779830522381:sum(km_estimates$d_j_trt_exp)
+1779830522383:(sum(km_estimates$d_j_trt) - sum(km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+1779830572161:sum(km_estimates$d_j_trt)
+1779830572163:sum(km_estimates$d_j_trt_exp)
+1779830572166:(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+1779830582147:(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt)
+1779830584718:sum(km_estimates$d_j_trt)
+1779830584721:sum(km_estimates$d_j_trt_exp)
+1779830584724:(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+1779830624015:# Calculate the expected number of events for each group at each time point
+1779830624017:km_estimates <- km_estimates |>
+1779830624018:mutate(
+1779830624019:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830624019:v_j_trt = r_j_trt * (r_j_ctl / r_j) * ((r_j - d_j) / (r_j - 1)),
+1779830624020:d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+1779830624021:v_j_ctl = r_j_ctl * (r_j_trt / r_j) * ((r_j - d_j) / (r_j - 1)),
+1779830624021:) |>
+1779830624022:filter(d_j > 0)
+1779830625558:sum(km_estimates$d_j_ctl)
+1779830625560:sum(km_estimates$d_j_ctl_exp)
+1779830625562:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830628049:sum(km_estimates$d_j_trt)
+1779830628052:sum(km_estimates$d_j_trt_exp)
+1779830628054:(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
+1779830641257:surv_diff$var
+1779830662530:sum(v_j_trt)
+1779830668476:sum(km_estimates$v_j_trt)
+1779830678113:sqrt(sum(km_estimates$v_j_trt))
+1779830779228:surv_diff$n
+1779830781854:surv_diff$var
+1779830798258:sum(km_estimates$d_j_ctl)
+1779830798260:sum(km_estimates$d_j_ctl_exp)
+1779830798261:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830798262:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+1779830823618:?survdiff
+1779830881913:# For each time interval (month), get the number at risk, the number of events,
+1779830881914:# and the number of censored observations
+1779830881916:observation_months <- seq(0L, max(dat$time))
+1779830881920:r_j <- rep(NA, max(observation_months))
+1779830881923:d_j <- rep(NA, max(observation_months))
+1779830881925:c_j <- rep(NA, max(observation_months))
+1779830881928:r_j_trt <- rep(NA, max(observation_months))
+1779830881931:d_j_trt <- rep(NA, max(observation_months))
+1779830881935:c_j_trt <- rep(NA, max(observation_months))
+1779830881938:r_j_ctl <- rep(NA, max(observation_months))
+1779830881942:d_j_ctl <- rep(NA, max(observation_months))
+1779830881946:c_j_ctl <- rep(NA, max(observation_months))
+1779830881949:for (t in observation_months) {
+1779830881951:r_j[t + 1] <- sum(dat$time >= t)
+1779830881951:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779830881952:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779830881953:r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+1779830881953:d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+1779830881954:c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+1779830881955:r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+1779830881956:d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+1779830881956:c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+1779830881957:}
+1779830882026:km_estimates <- tibble(
+1779830882028:time = observation_months,
+1779830882030:r_j = r_j,
+1779830882031:d_j = d_j,
+1779830882031:c_j = c_j,
+1779830882032:r_j_trt = r_j_trt,
+1779830882033:d_j_trt = d_j_trt,
+1779830882033:c_j_trt = c_j_trt,
+1779830882034:r_j_ctl = r_j_ctl,
+1779830882034:d_j_ctl = d_j_ctl,
+1779830882035:c_j_ctl = c_j_ctl
+1779830882036:)
+1779830882039:# Calculate the expected number of events for each group at each time point
+1779830882040:km_estimates <- km_estimates |>
+1779830882041:mutate(
+1779830882041:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830882042:v_j_trt = r_j_trt * (r_j_ctl / r_j^2) * ((r_j - d_j) / (r_j - 1)),
+1779830882042:d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+1779830882043:v_j_ctl = r_j_ctl * (r_j_trt / r_j^2) * ((r_j - d_j) / (r_j - 1)),
+1779830882043:) |>
+1779830882044:filter(d_j > 0)
+1779830883278:sum(km_estimates$d_j_ctl)
+1779830883282:sum(km_estimates$d_j_ctl_exp)
+1779830883284:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830883286:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / ?2.636085
+1779830887806:sum(km_estimates$d_j_ctl)
+1779830888113:sum(km_estimates$d_j_ctl_exp)
+1779830888416:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830889521:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / ?2.636085
+1779830894682:sum(km_estimates$d_j_ctl)
+1779830894685:sum(km_estimates$d_j_ctl_exp)
+1779830894688:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830894690:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+1779830969828:# For each time interval (month), get the number at risk, the number of events,
+1779830969830:# and the number of censored observations
+1779830969832:observation_months <- seq(0L, max(dat$time))
+1779830969837:r_j <- rep(NA, max(observation_months))
+1779830969839:d_j <- rep(NA, max(observation_months))
+1779830969842:c_j <- rep(NA, max(observation_months))
+1779830969845:r_j_trt <- rep(NA, max(observation_months))
+1779830969847:d_j_trt <- rep(NA, max(observation_months))
+1779830969849:c_j_trt <- rep(NA, max(observation_months))
+1779830969852:r_j_ctl <- rep(NA, max(observation_months))
+1779830969855:d_j_ctl <- rep(NA, max(observation_months))
+1779830969858:c_j_ctl <- rep(NA, max(observation_months))
+1779830969861:for (t in observation_months) {
+1779830969863:r_j[t + 1] <- sum(dat$time >= t)
+1779830969863:d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
+1779830969864:c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
+1779830969865:r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
+1779830969866:d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
+1779830969867:c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+1779830969868:r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
+1779830969869:d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
+1779830969869:c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+1779830969871:}
+1779830969907:km_estimates <- tibble(
+1779830969908:time = observation_months,
+1779830969908:r_j = r_j,
+1779830969909:d_j = d_j,
+1779830969910:c_j = c_j,
+1779830969910:r_j_trt = r_j_trt,
+1779830969911:d_j_trt = d_j_trt,
+1779830969912:c_j_trt = c_j_trt,
+1779830969913:r_j_ctl = r_j_ctl,
+1779830969914:d_j_ctl = d_j_ctl,
+1779830969914:c_j_ctl = c_j_ctl
+1779830969915:)
+1779830969919:# Calculate the expected number of events for each group at each time point
+1779830969920:km_estimates <- km_estimates |>
+1779830969920:mutate(
+1779830969921:d_j_trt_exp = r_j_trt * (d_j / r_j),
+1779830969922:v_j_trt = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1)),
+1779830969922:d_j_ctl_exp = r_j_ctl * (d_j / r_j),
+1779830969923:v_j_ctl = (r_j_trt * r_j_ctl * d_j * (r_j - d_j)) / (r_j^2 * (r_j - 1))
+1779830969924:) |>
+1779830969924:filter(d_j > 0)
+1779830972221:sum(km_estimates$d_j_ctl)
+1779830972224:sum(km_estimates$d_j_ctl_exp)
+1779830972226:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830972228:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / 2.636085
+1779830978414:sum(km_estimates$d_j_ctl)
+1779830978416:sum(km_estimates$d_j_ctl_exp)
+1779830978417:(sum(km_estimates$d_j_ctl) - sum(km_estimates$d_j_ctl_exp))^2 / sum(km_estimates$v_j_ctl, na.rm = TRUE)
+1779830979968:sum(km_estimates$d_j_trt)
+1779830979970:sum(km_estimates$d_j_trt_exp)
+1779830979972:(sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)

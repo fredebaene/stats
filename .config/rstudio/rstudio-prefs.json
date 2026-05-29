@@ -1,0 +1,38 @@
+{
+    "initial_working_directory": "~",
+    "auto_detect_indentation": true,
+    "continue_comments_on_newline": true,
+    "highlight_selected_line": true,
+    "scroll_past_end_of_document": true,
+    "panes": {
+        "quadrants": [
+            "TabSet2",
+            "TabSet1",
+            "Source",
+            "Console"
+        ],
+        "tabSet1": [
+            "Environment",
+            "History",
+            "Connections",
+            "Build",
+            "VCS",
+            "Tutorial",
+            "Presentation"
+        ],
+        "tabSet2": [
+            "Files",
+            "Plots",
+            "Packages",
+            "Help",
+            "Viewer",
+            "Presentations"
+        ],
+        "hiddenTabSet": [],
+        "console_left_on_top": false,
+        "console_right_on_top": false,
+        "additional_source_columns": 0
+    },
+    "posix_terminal_shell": "bash",
+    "jobs_tab_visibility": "shown"
+}
