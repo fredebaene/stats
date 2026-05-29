@@ -1,7 +1,10 @@
 ---
 title: "Survival"
 author: "Frederick De Baene"
-format: pdf
+format:
+  html:
+    toc: true
+    number-sections: true
 ---
 
 ```{r echo=FALSE}
@@ -318,8 +321,7 @@ summary(km_fit)
 # Comparing Curves
 
 ```{r}
-# Get a sample dataset
-# Create a data frame
+# Create a sample dataset
 dat <- data.frame(
   time = c(12, 18, 24, 30, 36, 6, 15, 20, 28, 40, 8, 10, 14, 16, 22, 5, 12, 18, 20, 25),
   status = c(1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0),
@@ -328,35 +330,46 @@ dat <- data.frame(
 ```
 
 ```{r}
+# Estimate the survival curves using the KM estimator
 km_fit <- survfit(Surv(time, status) ~ group, data = dat)
 ```
 
-```{r}
+```{r echo=FALSE}
 summary(km_fit)
-```
-
-```{r}
-dat_split <- split(dat, dat$group)
 ```
 
 Adding a covariate to `survfit()` just splits the data in two to estimate the
 survival curves for both populations using the respective samples.
 
 ```{r}
-summary(survfit(Surv(time, status) ~ 1, data = dat_split[[1]]))
+# Split the dataset and estimate the survival curves
+dat_split <- split(dat, dat$group)
+
+km_fit_split_ctl <- survfit(Surv(time, status) ~ 1, data = dat_split[[1]])
+km_fit_split_trt <- survfit(Surv(time, status) ~ 1, data = dat_split[[2]])
+```
+
+```{r}
+ggsurvplot(km_fit_split_ctl)
+```
+
+```{r}
+ggsurvplot(km_fit_split_trt)
 ```
 
 ```{r}
 ggsurvplot(km_fit)
 ```
 
+We can perform a log-rank (LR) test to compare survival between both groups.
+
 ```{r}
 # Compare survival in both groups
 surv_diff <- survdiff(Surv(time, status) ~ group, data = dat)
 ```
 
-```{r}
-surv_diff$var
+```{r echo=FALSE}
+surv_diff
 ```
 
 ```{r}
@@ -382,13 +395,35 @@ for (t in observation_months) {
   d_j[t + 1] <- sum(dat$time == t & dat$status == 1)
   c_j[t + 1] <- sum(dat$time == t & dat$status == 0)
   
-  r_j_trt[t + 1] <- sum(dat$time >= t & dat$group == "Treatment")
-  d_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 1)
-  c_j_trt[t + 1] <- sum(dat$time == t & dat$group == "Treatment" & dat$status == 0)
+  r_j_trt[t + 1] <- sum(
+    dat$time >= t
+    & dat$group == "Treatment"
+  )
+  d_j_trt[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Treatment"
+    & dat$status == 1
+  )
+  c_j_trt[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Treatment"
+    & dat$status == 0
+  )
   
-  r_j_ctl[t + 1] <- sum(dat$time >= t & dat$group == "Control")
-  d_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 1)
-  c_j_ctl[t + 1] <- sum(dat$time == t & dat$group == "Control" & dat$status == 0)
+  r_j_ctl[t + 1] <- sum(
+    dat$time >= t
+    & dat$group == "Control"
+  )
+  d_j_ctl[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Control"
+    & dat$status == 1
+  )
+  c_j_ctl[t + 1] <- sum(
+    dat$time == t
+    & dat$group == "Control"
+    & dat$status == 0
+  )
   
 }
 
@@ -427,3 +462,50 @@ sum(km_estimates$d_j_trt)
 sum(km_estimates$d_j_trt_exp)
 (sum(km_estimates$d_j_trt - km_estimates$d_j_trt_exp))^2 / sum(km_estimates$v_j_trt, na.rm = TRUE)
 ```
+
+```{r}
+# Obtain the p-value
+pchisq(q = 1.93, df = 1, lower.tail = FALSE)
+```
+
+```{r}
+# And compare to the one obtained with `survival`
+surv_diff$pvalue
+```
+
+The LR test only tests for a statistically significant difference between the
+groups. It does not estimate the effect size nor a confidence interval. Furthermore,
+if there is cross-over, or in other words, if the proportional hazards assumption
+is violated, the LR test has less power to detect a statistically significant
+difference.
+
+# Proportional Hazards
+
+The PH assumption is quite important when doing survival analysis. The PH
+assumption states that the hazard ratio (HR) is constant over time. For example,
+if the HR for the treatment group is 0.67 (relative to the control group), then,
+at any time point, the hazard in the treatment group is 0.67 times smaller than the
+hazard in the control group.
+
+The estimated survival curves should not cross and the distance between the estimated
+survival curves should be approximately constant on a log scale.
+
+```{r}
+ggsurvplot(km_fit, fun = "cloglog", title = "Log-Log Plot")
+```
+
+We can also calculate the Schoenfeld residuals.
+
+```{r}
+cph_fit <- coxph(Surv(time, status) ~ group, data = dat)
+```
+
+```{r}
+cph_fit
+```
+```{r}
+residuals(cph_fit, type = "schoenfeld")
+```
+
+
+
