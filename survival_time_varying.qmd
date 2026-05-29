@@ -1,0 +1,172 @@
+---
+title: "Survival: Time-Varying Covariates"
+author: "Frederick De Baene"
+format:
+  html:
+    toc: true
+    number-sections: true
+---
+
+```{r echo=FALSE}
+suppressPackageStartupMessages(library(survsim))
+suppressPackageStartupMessages(library(survival))
+```
+
+The below code generates a dataset with two time-fixed covariates: age and group. Furthermore,
+there is also the event indicator **status** and the outcome **stop** (the time variable).
+
+```{r}
+# Initialize settings for simulation
+set.seed(123)
+N <- 100
+
+# Simulate data
+dat_tf <- simple.surv.sim(
+  n = N,
+  foltime = 500,
+  dist.ev = c('llogistic'),
+  anc.ev = c(0.68),
+  beta0.ev = c(5.8),
+  anc.cens = 1.2,
+  beta0.cens = 7.4,
+  z = list(c("unif", 0.8, 1.2)),
+  beta = list(c(-0.4), c(0)),
+  x = list(c("bern", 0.5), c("normal", 70, 13))
+)
+names(dat_tf)[c(1,6,7)] <- c("id", "group", "age")
+```
+
+The following also generates a dataset for 100 patients with the time-varying
+covariate **crp** (C-reactive protein). The dataset follows a counting process
+data structure. Such data structures allow for:
+
+* time-varying covariates
+* multiple events per subject
+* left-truncated data
+* interval-censored data.
+
+```{r}
+# Initialize settings for simulation
+set.seed(123)
+N <- 100
+nft <- sample(x = 1:10, size = N, replace = TRUE) # number of follow-up time points
+crp <- round(abs(rnorm(n = sum(nft) + N, mean = 100, sd = 40)), 1)
+time <- NA
+id <- NA
+i <- 0
+
+# Simulate data
+for(n in nft) {
+  i <- i+1
+  time.n <- sample(1:500, n)
+  time.n <- c(0, sort(time.n))
+  time <- c(time, time.n)
+  id.n <- rep(i,n+1)
+  id <- c(id, id.n)
+}
+dat_tv <- cbind(data.frame(id, time)[-1,], crp)
+```
+
+We merge the datasets to obtain a start-stop dataset.
+
+```{r}
+dat <- tmerge(dat_tf, dat_tf, id = id, endpt = event(stop, status))
+dat <- tmerge(dat, dat_tv, id = id, crp = tdc(time, crp))
+```
+
+Now, let's fit a Cox model with time-varying covariates.
+
+```{r}
+cox_fit <- coxph(
+  Surv(tstart, tstop, endpt) ~ group + age + crp + cluster(id),
+  data = dat
+)
+```
+
+```{r echo=FALSE}
+summary(cox_fit)
+```
+
+# Test PH Assumption
+
+We can test the PH assumption as follows.
+
+```{r}
+# Fit the Cox model
+cox_fit_lung <- coxph(Surv(time, status) ~ age + ph.karno + sex, data = lung)
+zph <- cox.zph(cox_fit_lung)
+```
+
+```{r echo=FALSE}
+zph
+```
+
+There is a significant deviation from the PH assumption for the variable
+**ph.karno**, which shows $p = 0.0046$.
+
+```{r}
+plot(zph[2],lwd=2)
+abline(0,0, col=1,lty=3,lwd=2)
+abline(h= cox_fit_lung$coef[2], col=3, lwd=2, lty=2)
+legend(
+  "bottomright",
+  legend = c(
+    "Reference line for null effect",
+    "Average hazard over time",
+    "Time-varying hazard"
+  ),
+  lty = c(3,2,1),
+  col = c(1,3,1),
+  lwd = 2
+)
+```
+
+# Time-Fixed Covariates
+
+We can also assume that the effect of time-fixed covariates (or baseline covariates)
+changes in time. We can split the observation time into several time intervals and assess
+the effect of the time-fixed covariate during each of these time intervals.
+
+```{r}
+# Split the dataset into multiple time intervals
+lung.split <- survSplit(
+  Surv(time, status) ~ .,
+  data = lung,
+  cut = c(180, 350),
+  episode = "tgroup",
+  id = "id"
+)
+```
+
+```{r}
+# Fit a Cox model to the data
+cox_fit_lung_split <- coxph(
+  Surv(tstart, time, status) ~ age + ph.karno:strata(tgroup) + sex,
+  data = lung.split
+)
+```
+
+```{r echo=FALSE}
+summary(cox_fit_lung_split)
+```
+
+```{r}
+cox.zph(cox_fit_lung_split)
+```
+
+We can also model a covariate as a function of the covariate in function
+of time.
+
+```{r}
+coxph(
+  Surv(time, status) ~ age + ph.karno + tt(ph.karno) + sex,
+  data = lung,
+  tt = function(x, t, ...) x * log(t + 20)
+)
+```
+
+The time-varying effect of **ph.karno** is:
+
+$$
+\beta_{ph.karno}(t) = -0.097932 + 0.015236 \cdot log(t + 20)
+$$
