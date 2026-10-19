@@ -1,0 +1,89 @@
+# Confidence Intervals
+
+```{r}
+library(tidyverse)
+```
+
+## Proportion
+
+Let the parameter $\pi$ denote a population proportion. We can estimate $\pi$
+by producing a point estimate and an interval estimate. There are different
+estimators that produce interval estimates for $\pi$.
+
+```{r}
+simulate_data <- function(theta, n, idx) {
+  
+  # Simulate data and estimate parameter
+  X <- rbinom(n = 1, size = n, prob = theta)
+  theta_hat <- X / n
+  
+  # Get results
+  tibble(theta = theta, n = n, idx = idx, theta_hat = theta_hat)
+  
+}
+```
+
+### Wald Interval
+
+The Wald interval is produced as follows:
+
+$$
+\hat{\pi} \pm z_{1 - \frac{\alpha}{2} \cdot \sqrt{\frac{\hat{\pi} (1 - \hat{\pi})}{n}}}
+$$
+
+The coverage of the Wald interval is not as good at extreme values for $\pi$ or
+small sample sizes.
+
+```{r}
+# Ensure reproducibility
+set.seed(3729)
+
+# Define settings for simulation
+N <- 100L
+
+ns <- seq(5L, 100L, 5L)
+thetas <- seq(0.01, 0.99, 0.01)
+
+settings <- tibble(theta = thetas) |>
+  crossing(n = ns) |>
+  crossing(idx = 1L:N) |>
+  arrange(theta, n, idx)
+
+sim_dat <- pmap_dfr(.l = settings, .f = simulate_data, .progress = TRUE)
+```
+
+```{r}
+# Calculate the Wald confidence intervals
+wald_dat <- sim_dat |>
+  mutate(
+    ci_wald_ll = theta_hat - qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
+    ci_wald_ul = theta_hat + qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
+    ci_wald_cov = between(theta, ci_wald_ll, ci_wald_ul)
+  )
+
+# Calculate the Wald CI coverage
+wald_smr <- wald_dat |>
+  group_by(theta, n) |>
+  summarise(ci_wald_cov = mean(ci_wald_cov), .groups = "drop")
+```
+
+```{r}
+ggplot(wald_smr, aes(x = n, y = ci_wald_cov, color = theta, group = theta)) +
+  geom_smooth(se = FALSE, method = "loess", formula = "y ~ x") +
+  geom_hline(yintercept = 0.95, color = "darkred") +
+  theme_classic() +
+  labs(x = "Sample size", y = "CI Wald: Coverage") +
+  scale_color_gradient2(low = "yellow", high = "red")
+```
+
+```{r}
+wald_smr |>
+  filter(theta %in% c(0.01, 0.50, 0.99)) |>
+  mutate(theta = as_factor(theta)) |>
+  ggplot(aes(x = n, y = ci_wald_cov)) +
+    geom_smooth(se = FALSE, method = "loess", formula = "y ~ x") +
+    geom_hline(yintercept = 0.95, color = "darkred") +
+    theme_classic() +
+    labs(x = "Sample size", y = "CI Wald: Coverage")
+```
+
