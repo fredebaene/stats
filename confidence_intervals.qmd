@@ -1,7 +1,7 @@
 # Confidence Intervals
 
 ```{r}
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE)
 ```
 
 ## Proportion
@@ -23,16 +23,50 @@ simulate_data <- function(theta, n, idx) {
 }
 ```
 
+First, we simulate data:
+
+```{r}
+# Ensure reproducibility
+set.seed(3729)
+
+# Define settings for simulation
+N <- 100L
+
+ns <- seq(5L, 100L, 5L)
+thetas <- seq(0.01, 0.99, 0.01)
+
+settings <- tibble(theta = thetas) |>
+  crossing(n = ns) |>
+  crossing(idx = 1L:N) |>
+  arrange(theta, n, idx)
+
+sim_dat <- pmap_dfr(.l = settings, .f = simulate_data, .progress = TRUE)
+```
+
 ### Wald Interval
 
-The Wald interval is produced as follows:
+The Wald interval is calculated as follows:
 
 $$
-\hat{\pi} \pm z_{1 - \frac{\alpha}{2} \cdot \sqrt{\frac{\hat{\pi} (1 - \hat{\pi})}{n}}}
+\hat{\pi} \pm z_{1 - \frac{\alpha}{2}} \cdot \sqrt{\frac{\hat{\pi} (1 - \hat{\pi})}{n}}
 $$
 
-The coverage of the Wald interval is not as good at extreme values for $\pi$ or
-small sample sizes.
+We calculate the Wald CI for the simulated data.
+
+```{r}
+# Calculate the Wald confidence intervals
+wald_dat <- sim_dat |>
+  mutate(
+    ci_wald_ll = theta_hat - qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
+    ci_wald_ul = theta_hat + qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
+    ci_wald_cov = between(theta, ci_wald_ll, ci_wald_ul)
+  )
+
+# Calculate the Wald CI coverage
+wald_smr <- wald_dat |>
+  group_by(theta, n) |>
+  summarise(ci_wald_cov = mean(ci_wald_cov), .groups = "drop")
+```
 
 ```{r}
 # Ensure reproducibility
@@ -53,21 +87,6 @@ sim_dat <- pmap_dfr(.l = settings, .f = simulate_data, .progress = TRUE)
 ```
 
 ```{r}
-# Calculate the Wald confidence intervals
-wald_dat <- sim_dat |>
-  mutate(
-    ci_wald_ll = theta_hat - qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
-    ci_wald_ul = theta_hat + qnorm(p = 0.975)*sqrt((theta_hat*(1-theta_hat))/n),
-    ci_wald_cov = between(theta, ci_wald_ll, ci_wald_ul)
-  )
-
-# Calculate the Wald CI coverage
-wald_smr <- wald_dat |>
-  group_by(theta, n) |>
-  summarise(ci_wald_cov = mean(ci_wald_cov), .groups = "drop")
-```
-
-```{r}
 ggplot(wald_smr, aes(x = n, y = ci_wald_cov, color = theta, group = theta)) +
   geom_smooth(se = FALSE, method = "loess", formula = "y ~ x") +
   geom_hline(yintercept = 0.95, color = "darkred") +
@@ -76,14 +95,35 @@ ggplot(wald_smr, aes(x = n, y = ci_wald_cov, color = theta, group = theta)) +
   scale_color_gradient2(low = "yellow", high = "red")
 ```
 
+The following figure shows the coverage at different sample sizes when sampling
+from three different populations with the parameters $\theta_1 = 0.01$, $\theta_2
+= 0.50$, and $\theta_3 = 0.99$.
+
+An increase in sample size results in a better coverage. The coverage at the
+extremes of the parameter space is lower compared to other areas of the parameter
+space.
+
 ```{r}
 wald_smr |>
   filter(theta %in% c(0.01, 0.50, 0.99)) |>
   mutate(theta = as_factor(theta)) |>
-  ggplot(aes(x = n, y = ci_wald_cov)) +
+  ggplot(aes(x = n, y = ci_wald_cov, color = theta)) +
     geom_smooth(se = FALSE, method = "loess", formula = "y ~ x") +
     geom_hline(yintercept = 0.95, color = "darkred") +
     theme_classic() +
-    labs(x = "Sample size", y = "CI Wald: Coverage")
+    labs(title = "Coverage for Wald CI") +
+    labs(x = "Sample size", y = "Coverage", color = "Theta")
 ```
 
+### Wilson Interval
+
+The Wilson interval is calculated as follows:
+
+$$
+\frac
+  {\hat{\pi} + \frac{z^2_{1 - \frac{\alpha}{2}}}{2n}}
+  {1 + \frac{z^2_{1 - \frac{\alpha}{2}}}{n}}
+  \pm \frac
+    {z_{1 - \frac{\alpha}{2}} \cdot \sqrt{\frac{\hat{p} \hat{q}}{n} + \frac{z^2_{1 - \frac{\alpha}{2}}}{4n^2}}}
+    {1 + \frac{z^2_{1 - \frac{\alpha}{2}}}{n}}
+$$
