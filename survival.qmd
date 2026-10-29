@@ -1,0 +1,234 @@
+# Survival
+
+```{r}
+#| echo: false
+#| warn: false
+library(tidyverse, warn.conflicts = FALSE)
+library(labelled, warn.conflicts = FALSE)
+library(survival, warn.conflicts = FALSE)
+library(kableExtra, warn.conflicts = FALSE)
+```
+
+
+This chapter outlines methods for survival analysis or time-to-event analysis.
+
+## Dataset
+
+Let the random variable $T$ represent the observation time and $\delta$ represent
+an indicator variable for which $\delta = 1$ if the event occurred and $\delta = 0$
+otherwise.
+
+We consider the following dataset where the event of interest is death.
+
+```{r}
+#| echo: false
+dat <- tibble(
+  Time = c(1, 1, 2, 2, 3, 4, 4, 5, 5, 8, 8, 8, 8, 11, 11, 12, 12, 15, 17, 22, 23),
+  Delta = rep(1, 21)
+)
+
+dat <- set_variable_labels(dat, Time = "Time to death")
+
+dat |>
+  kable() |>
+  kable_styling()
+```
+
+## Survival Functions
+
+We can now use non-parametric estimator the survival function $S(t)$:
+
+$$
+S(t) = P(T > t)
+$$
+
+### Empirical Estimator
+
+The empirical estimator $\tilde{S}(t)$ can be used in the absence of censoring:
+
+$$
+\tilde{S}(t) = \frac{\sum_{i = 1}^{n} (T_i > t)}{n}
+$$
+
+with $T_i$ the observation time for patient $i$. Note that $\delta_i = 1$ for
+every patient as there is no censoring.
+
+```{r}
+# Estimate the survival function using the empirical estimator
+surv_estimates <- dat |>
+  group_by(Time) |>
+  summarise(d = n(), .groups = "drop") |>
+  mutate(d_cum = cumsum(d), n = sum(d)) |>
+  mutate(S_tilde = (n - d_cum) / n)
+```
+
+```{r}
+#| echo: false
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+If we look at the data, we can see that $\tilde{S}(4) = 0.667$. There are $7$
+patients for which the event occurs before or during week 4. In other words,
+there are $21 - 7 = 14$ patients for which the event occurs after week 4.
+Therefore, the estimated probability of the event time $T$ being larger than $4$
+is:
+
+$$
+\hat{P}(T > 4) = \tilde{S}(4) = \frac{14}{21} = 0.667
+$$
+
+We can approach this as a binomial distribution with parameters $p$ and $n$. The
+standard error of $\hat{p}$ is calculated as:
+
+$$
+SE(\hat{p}) = \sqrt{\frac{p \cdot (1 - p)}{n}}
+$$
+
+Using the data:
+
+```{r}
+# Calculate the standard error for the estimates
+surv_estimates <- surv_estimates |>
+  mutate(S_tilde_se = sqrt((S_tilde*(1-S_tilde))/n))
+```
+
+Using the **survival** package:
+
+```{r}
+# Use the survival package to estimate S(t) using the empirical estimator
+km <- survfit(Surv(Time, Delta) ~ 1, dat)
+```
+
+```{r}
+summary(km)
+```
+
+### Kaplan-Meier Estimator
+
+The Kaplan-Meier (KM) estimator is the most popular approach to estimate $S(t)$.
+We consider a new dataset, this time with censoring.
+
+```{r}
+#| echo: false
+dat_wi_cens <- tibble(
+  Time = c(6, 6, 6, 6, 7, 9, 10, 10, 11, 13, 16, 17, 19, 20, 22, 23, 25, 32, 32, 34, 35),
+  Delta = c(0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0)
+)
+
+dat_wi_cens <- set_variable_labels(dat_wi_cens, Time = "Time to death")
+
+dat_wi_cens |>
+  kable() |>
+  kable_styling()
+```
+
+If we use $\tilde{S}(t)$ to estimate $S(6)$, we calculate the following estimate:
+
+$$
+\tilde{S}(6) = \frac{17}{21} = 0.8095238
+$$
+
+However, if we have a look at the dataset, we can see that for the four patients
+that have an observation time of $T = 6$, there is one patient that was censored
+at $T = 6$. We assume the patient survived until the end of week 6. In other
+words, this patient did not have the event before or during week 6, which
+implies the event occurred after week 6. Therefore, using $\tilde{S}(t)$ results
+in an **underestimation** of the survival probability $S(t)$.
+
+We must take into account censoring when estimating $S(t)$. The KM estimator
+$\hat{S}(t)$ takes this into account:
+
+$$
+\hat{S}(t)
+  = \prod_{j \leq t} \frac{r_j - d_j}{r_j}
+  = \prod_{j \leq t} 1 - \frac{d_j}{r_j}
+  = \prod_{j \leq t} 1 - \hat{\lambda}_j
+$$
+
+with $j = 1, 2, ..., K$ the set of $K$ distinct event times (event or
+censoring), $d_j$ the number of events at $j$, $r_j$ the number at risk at
+$j$, and $c_j$ the number of censored observations at $j$.
+
+The **number at risk** is an important notion. It is the number of individuals
+that risk having the event. For a particular time interval, the number at risk
+is the number of individuals that _enters_ that time interval without having had
+the event or being censored prior to the time interval.
+
+We estimate $S(t)$ using $\hat{S}(t)$:
+
+```{r}
+# Calculate the number at risk (r), the number of events (d), and the number of
+# censored observations (c) for each time interval j
+surv_estimates <- dat_wi_cens |>
+  group_by(Time, Delta) |>
+  summarise(n = n(), .groups = "drop") |>
+  pivot_wider(id_cols = Time, names_from = Delta, values_from = n) |>
+  rename(j = Time, c_j = `0`, d_j = `1`) |>
+  select(j, d_j, c_j) |>
+  replace_na(list(d_j = 0, c_j = 0)) |>
+  mutate(r_j = (nrow(dat_wi_cens) - cumsum(d_j) - cumsum(c_j) + d_j + c_j))
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+First, we estimate the conditional probability of having the event for every
+time interval $j$.
+
+```{r}
+surv_estimates <- surv_estimates |>
+  mutate(
+    prob_evnt = d_j / r_j,
+    prob_surv = 1 - prob_evnt,
+    S_hat = cumprod(prob_surv)
+  )
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+Note that if there is no censoring, then $\hat{S}(t) = \tilde{S}(t)$. For large
+$n$, we have:
+
+$$
+\hat{S}(t) \sim N \big[ S(t), S(t) \cdot (1 - S(t) / n) \big]
+$$
+
+We can also use Greenwood's formula to estimate the variance of $\hat{S}(t)$:
+
+$$
+\widehat{Var}(\hat{S}(t))
+  = \hat{S}^2(t) \cdot \sum_{j \leq t} \frac{d_j}{r_j (r_j - d_j)}
+$$
+
+Using this, we can construct 95% confidence intervals as:
+
+$$
+\hat{S}(t) \pm z_{1 - \frac{\alpha}{2}} \cdot SE(\hat{S}(t))
+$$
+
+for which we can estimate the standard error of $\hat{S}(t)$ using Greenwood's
+formula. This approach, however, yields limits for the confidence interval that
+are smaller than $0$ or larger than $1$.
+
+```{r}
+# Calculate the limits for the confidence interval
+sig_level <- 0.05
+z_value <- qnorm(p = 1 - sig_level/2)
+
+surv_estimates <- surv_estimates |>
+  mutate(est_var_S_hat = S_hat^2 * cumsum(d_j / (r_j*(r_j - d_j)))) |>
+  mutate(est_se_S_hat = sqrt(est_var_S_hat)) |>
+  mutate(ci_ll = S_hat - z_value*est_se_S_hat, ci_ul = S_hat + z_value*est_se_S_hat)
+```
+
+```{r}
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
