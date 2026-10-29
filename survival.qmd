@@ -1,14 +1,13 @@
 # Survival
 
 ```{r}
-#| echo: false
-#| warn: false
+#| include: false
+
 library(tidyverse, warn.conflicts = FALSE)
 library(labelled, warn.conflicts = FALSE)
 library(survival, warn.conflicts = FALSE)
 library(kableExtra, warn.conflicts = FALSE)
 ```
-
 
 This chapter outlines methods for survival analysis or time-to-event analysis.
 
@@ -22,21 +21,22 @@ We consider the following dataset where the event of interest is death.
 
 ```{r}
 #| echo: false
-dat <- tibble(
-  Time = c(1, 1, 2, 2, 3, 4, 4, 5, 5, 8, 8, 8, 8, 11, 11, 12, 12, 15, 17, 22, 23),
-  Delta = rep(1, 21)
-)
+#| label: tbl-dat-wo-cens
+#| tbl-cap: "Sample data with time to death (in weeks) and no censoring."
 
-dat <- set_variable_labels(dat, Time = "Time to death")
+times <- c(1, 1, 2, 2, 3, 4, 4, 5, 5, 8, 8, 8, 8, 11, 11, 12, 12, 15, 17, 22, 23)
 
-dat |>
+dat_wo_cens <- tibble(Time = times, Delta = rep(1, 21)) |>
+  set_variable_labels(Time = "Time to death")
+
+dat_wo_cens |>
   kable() |>
   kable_styling()
 ```
 
-## Survival Functions
+## Survival Function
 
-We can now use non-parametric estimator the survival function $S(t)$:
+The survival function $S(t)$ is defined as:
 
 $$
 S(t) = P(T > t)
@@ -55,7 +55,7 @@ every patient as there is no censoring.
 
 ```{r}
 # Estimate the survival function using the empirical estimator
-surv_estimates <- dat |>
+surv_estimates <- dat_wo_cens |>
   group_by(Time) |>
   summarise(d = n(), .groups = "drop") |>
   mutate(d_cum = cumsum(d), n = sum(d)) |>
@@ -94,11 +94,19 @@ surv_estimates <- surv_estimates |>
   mutate(S_tilde_se = sqrt((S_tilde*(1-S_tilde))/n))
 ```
 
+```{r}
+#| echo: false
+#| label: tbl-dat-wo-cens-surv-est
+#| tbl-cap: "Estimates for the survival function using the empirical estimator."
+
+surv_estimates |> kable() |> kable_styling()
+```
+
 Using the **survival** package:
 
 ```{r}
 # Use the survival package to estimate S(t) using the empirical estimator
-km <- survfit(Surv(Time, Delta) ~ 1, dat)
+km <- survfit(Surv(Time, Delta) ~ 1, dat_wo_cens)
 ```
 
 ```{r}
@@ -112,19 +120,22 @@ We consider a new dataset, this time with censoring.
 
 ```{r}
 #| echo: false
-dat_wi_cens <- tibble(
-  Time = c(6, 6, 6, 6, 7, 9, 10, 10, 11, 13, 16, 17, 19, 20, 22, 23, 25, 32, 32, 34, 35),
-  Delta = c(0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0)
-)
+#| label: tbl-dat-wi-cens
+#| tbl-cap: "Sample data with time to death (in weeks) and censoring."
 
-dat_wi_cens <- set_variable_labels(dat_wi_cens, Time = "Time to death")
+times <- c(6, 6, 6, 6, 7, 9, 10, 10, 11, 13, 16, 17, 19, 20, 22, 23, 25, 32, 32, 34, 35)
+cens <- c(0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0)
+
+dat_wi_cens <- tibble(Time = times, Delta = cens) |>
+  set_variable_labels(Time = "Time to death")
 
 dat_wi_cens |>
   kable() |>
   kable_styling()
 ```
 
-If we use $\tilde{S}(t)$ to estimate $S(6)$, we calculate the following estimate:
+If we use $\tilde{S}(t)$ to estimate $S(6)$, we calculate the following
+estimate:
 
 $$
 \tilde{S}(6) = \frac{17}{21} = 0.8095238
@@ -159,6 +170,8 @@ the event or being censored prior to the time interval.
 We estimate $S(t)$ using $\hat{S}(t)$:
 
 ```{r}
+#| echo: false
+
 # Calculate the number at risk (r), the number of events (d), and the number of
 # censored observations (c) for each time interval j
 surv_estimates <- dat_wi_cens |>
@@ -170,21 +183,20 @@ surv_estimates <- dat_wi_cens |>
   replace_na(list(d_j = 0, c_j = 0)) |>
   mutate(r_j = (nrow(dat_wi_cens) - cumsum(d_j) - cumsum(c_j) + d_j + c_j))
 
-surv_estimates |>
-  kable() |>
-  kable_styling()
-```
-
-First, we estimate the conditional probability of having the event for every
-time interval $j$.
-
-```{r}
+# Calculate the conditional probability of the event occurring and survivng
+# a particular time interval
 surv_estimates <- surv_estimates |>
   mutate(
     prob_evnt = d_j / r_j,
     prob_surv = 1 - prob_evnt,
     S_hat = cumprod(prob_surv)
   )
+```
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wi-cens-surv-est
+#| tbl-cap: "The conditional event and survival probabilities per time interval."
 
 surv_estimates |>
   kable() |>
@@ -198,7 +210,7 @@ $$
 \hat{S}(t) \sim N \big[ S(t), S(t) \cdot (1 - S(t) / n) \big]
 $$
 
-We can also use Greenwood's formula to estimate the variance of $\hat{S}(t)$:
+We can use Greenwood's formula to estimate the variance of $\hat{S}(t)$:
 
 $$
 \widehat{Var}(\hat{S}(t))
@@ -216,6 +228,8 @@ formula. This approach, however, yields limits for the confidence interval that
 are smaller than $0$ or larger than $1$.
 
 ```{r}
+#| echo: false
+
 # Calculate the limits for the confidence interval
 sig_level <- 0.05
 z_value <- qnorm(p = 1 - sig_level/2)
@@ -227,8 +241,32 @@ surv_estimates <- surv_estimates |>
 ```
 
 ```{r}
+#| echo: false
+#| label: tbl-dat-wi-cens-ci
+#| tbl-cap: "KM estimates for the survival function with confidence intervals."
+
 surv_estimates |>
   kable() |>
   kable_styling()
 ```
 
+Seeing the survival function $S(t)$ outputs probabilities, confidence limits
+smaller than $0$ and greater than $1$ do not make sense. Therefore, we transform
+$\hat{S}(t)$ such that it is no longer bounded:
+
+$$
+\hat{L}(t) = log \big( -log (\hat{S}(t)) \big)
+$$
+
+We construct a confidence interval around $\hat{L}(t)$:
+
+$$
+\big[ \hat{L}(t) - A, \hat{L}(t) + A \big]
+$$
+
+with $A = z_{1 - \alpha / 2} \cdot \hat{SE}(\hat{L}(t))$. If we transform this
+confidence interval back, we have:
+
+$$
+\big[ \hat{S}(t)^{exp(A)}, \hat{S}(t)^{exp(-A)}]
+$$
