@@ -1,4 +1,4 @@
 # Preface {.unnumbered}
 
-This book is intended as an overview to general concepts and methods used in
-statistics.
+**Stats For You** (stats4u) provides an introduction to and examples on various
+topics encountered within statistics and probability.

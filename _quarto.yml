@@ -2,12 +2,14 @@ project:
   type: book
 
 book:
-  title: "stats"
+  title: "Stats4U"
   author: "Frederick De Baene"
-  date: "19/10/2026"
+  date: today
   chapters:
     - index.qmd
     - concepts.qmd
+    - relationships.qmd
+    - deviance.qmd
     - survival.qmd
     - references.qmd
 
