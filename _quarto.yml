@@ -7,7 +7,6 @@ book:
   date: "19/10/2026"
   chapters:
     - index.qmd
-    - intro.qmd
     - concepts.qmd
     - survival.qmd
     - references.qmd
