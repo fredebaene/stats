@@ -218,7 +218,7 @@ $$
 
 ## Dataset
 
-Let the random variable $T$ represent the observation time and $\delta$ represent
+Let the random variable $X$ represent the observation time and $\delta$ represent
 an indicator variable for which $\delta = 1$ if the event occurred and $\delta = 0$
 otherwise.
 
