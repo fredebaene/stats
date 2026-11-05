@@ -7,6 +7,11 @@ library(tidyverse, warn.conflicts = FALSE)
 library(labelled, warn.conflicts = FALSE)
 library(survival, warn.conflicts = FALSE)
 library(kableExtra, warn.conflicts = FALSE)
+library(fs, warn.conflicts = FALSE)
+library(janitor, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
+library(broom, warn.conflicts = FALSE)
+library(survminer, warn.conflicts = FALSE)
 ```
 
 This chapter outlines methods for survival analysis or time-to-event analysis.
@@ -239,22 +244,22 @@ dat_wo_cens |>
   kable_styling()
 ```
 
-## Survival Function
+## Estimation
 
 There are several parametric and non-parametric estimators for the survival
 function $S(t)$ (and the hazard function $\lambda(t)$).
 
 ### Empirical Estimator
 
-The empirical estimator $\tilde{S}(t)$ is a non-parametric estimator that can be
-used in the absence of censoring:
+The empirical estimator $\tilde{S}(t)$ is a non-parametric estimator for $S(t)$.
+It is unbiased in the absence of censoring. If there is no censoring, then
+$\delta_i = 1$ and $X_i = T_i$ for every patient $i$.
 
 $$
-\tilde{S}(t) = \frac{\sum_{i = 1}^{n} (T_i > t)}{n}
+\tilde{S}(t) = \frac{\sum_{i = 1}^{n} (X_i > t)}{n}
 $$
 
-with $T_i$ the observation time for patient $i$. Note that $\delta_i = 1$ for
-every patient as there is no censoring.
+with $X_i$ the observation time for patient $i$.
 
 ```{r}
 # Estimate the survival function using the empirical estimator
@@ -303,7 +308,9 @@ surv_estimates <- surv_estimates |>
 #| label: tbl-dat-wo-cens-surv-est
 #| tbl-cap: "Estimates for the survival function using the empirical estimator."
 
-surv_estimates |> kable() |> kable_styling()
+surv_estimates |>
+  kable() |>
+  kable_styling()
 ```
 
 Using the **survival** package:
@@ -353,7 +360,7 @@ implies the event occurred after week 6. Therefore, using $\tilde{S}(t)$ results
 in an **underestimation** of the survival probability $S(t)$.
 
 We must take into account censoring when estimating $S(t)$. The KM estimator
-$\hat{S}(t)$ takes this into account:
+$\hat{S}_{KM}(t)$ takes this into account:
 
 $$
 \hat{S}(t)
@@ -494,6 +501,26 @@ $$
 surv_estimates
 ```
 
+### Nelson-Aalen Estimator
+
+The Nelson-Aalen (NA) estimator is a non-parametric estimator for $\Lambda(t)$,
+and is defined as:
+
+$$
+\hat{\Lambda}_{NA}(t) = \sum_{u \leq t} \hat{\lambda}_u
+$$
+
+with $\hat{\lambda}_u = d_u / r_u$ ($d_u$ the number of events and $r_u$ the
+number at risk for $T = u$).
+
+### Breslow Estimator
+
+Using $\hat{\Lambda}_{NA}$, we can construct the Breslow estimator for $S(t)$:
+
+$$
+\hat{S}_{B}(t) = \exp(- \hat{\Lambda}_{NA}(t))
+$$
+
 ### Exponential Distribution
 
 Assume the event time $T$ follows an exponential distribution:
@@ -587,6 +614,192 @@ $$
 S(\tau) = 0.5 = \exp(- \lambda \tau) 
   \leftrightarrow \tau = \frac{- \log(0.5)}{\lambda}
 $$
+
+## Case
+
+To demonstrate the methods explained in this chapter, we use the **Heart
+Failure** dataset. This dataset can be found at
+[Kaggle: Heart Failure Dataset](https://www.kaggle.com/datasets/andrewmvd/heart-failure-clinical-data).
+
+```{r}
+#| echo: false
+
+# Import data
+dat_hf_raw <- read_csv(
+  file = path("data", "heart_failure.csv"),
+  col_types = "ccccccccccccc",
+)
+
+# Clean data
+dat_hf_cln <- dat_hf_raw |>
+  clean_names() |>
+  rename_with(.fn = ~ str_c(.x, "__src__")) |>
+  mutate(
+    time = parse_integer(time__src__),
+    event = parse_integer(death_event__src__),
+  ) |>
+  set_variable_labels(time = "Time (days)", event = "Died") |>
+  select(time, event)
+```
+
+The dataset contains demographic, clinical, and laboratory data on 299 patients,
+who have been followed up on and for who death events were registered.
+@tbl-hf-dat-ex shows the available data for the first 10 patients in the heart
+failure dataset.
+
+```{r}
+#| echo: false
+#| label: tbl-hf-dat-ex
+#| tbl-cap: "Available data for the first 10 patients in the heart failure dataset."
+
+dat_hf_cln |>
+  head(10) |>
+  kable(col.names = c("Observation Time (Days)", "Event Indicator")) |>
+  kable_styling()
+```
+
+
+The empirical estimator $\tilde{S}(t)$ can be used in the absence of censoring
+and is then the same as the KM estimator $\hat{S}_{KM}(t)$. Note that we are now
+explicitly ignoring the fact that some observations are censored for the sake of
+demonstrating the use of $\tilde{S}(t)$ and how it compares to
+$\hat{S}_{KM}(t)$.
+
+```{r}
+#| label: tbl-hf-est-s-ee-01
+#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
+
+# Estimate S(t) using the empirical estimator
+dat_hf_cln |>
+  group_by(time) |>
+  summarize(n = n(), .groups = "drop") |>
+  arrange(time) |>
+  mutate(S_tilde = (nrow(dat_hf_cln) - cumsum(n)) / nrow(dat_hf_cln)) |>
+  rename(`Event Time` = time, `Number of Events` = n, `Est. S(T)` = S_tilde) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+Or using the **survival** package.
+
+```{r}
+# Estimate S(t) using the empirical estimator
+ee_fit <- survfit(Surv(time, rep(1, nrow(dat_hf_cln))) ~ 1, dat_hf_cln)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-ee-02
+#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
+
+ee_fit |>
+  tidy() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+In the case of censoring, the empirical estimator $\tilde{S}(t)$ underestimates
+$S(t)$. The KM estimator $\hat{S}_{KM}(t)$ takes this into account.
+
+```{r}
+# Estimate S(t) using the Kaplan-Meier (KM) estimator
+km_fit <- survfit(Surv(time, event) ~ 1, dat_hf_cln)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-km-02
+#| tbl-cap: "Estimates for S(t) produced using the KM estimator."
+
+km_fit |>
+  tidy() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+@fig-hf-est-s-ee-km shows the estimates for $S(t)$ produced using the empirical
+estimator $\tilde{S}(t)$, assuming no censoring, and the KM estimator
+$\hat{S}_{KM}(t)$, taking into account censoring. By ignoring the censoring,
+$\tilde{S}(t)$ underestimates $S(t)$.
+
+```{r}
+#| echo: false
+#| label: fig-hf-est-s-ee-km
+#| fig-cap: "The estimates for S(t) produced using the empirical (EE) and KM estimator."
+
+list(ee_fit, km_fit) |>
+  ggsurvplot_combine(
+    risk.table = FALSE,
+    conf.int = FALSE,
+    legend.labs = c("EE", "KM"),
+    censor = FALSE
+  )
+```
+
+If we want to estimate $S(t)$ using $\hat{S}_{B}(t)$, we must first use the
+Nelson-Aalen estimator for $\Lambda(t)$.
+
+```{r}
+# Estimate S(t) using the Breslow estimator manually
+bl_fit_man <- km_fit |>
+  tidy() |>
+  select(time, n.risk, n.event, n.censor) |>
+  mutate(
+    haz_est = n.event / n.risk,
+    na_est = cumsum(haz_est),
+    bl_est = exp(-na_est),
+  )
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-bl-man
+#| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
+
+bl_fit_man |>
+  kable() |>
+  kable_styling()
+```
+
+We can also use the **survival** package to estimate $S(t)$ using the Breslow
+estimator.
+
+```{r}
+# Estimate S(t) using the Breslow estimator using the survival package
+bl_fit_cmp <- survfit(Surv(time, event) ~ 1, dat_hf_cln, type = "fleming-harrington")
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-bl-cmp
+#| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
+
+bl_fit_cmp |>
+  tidy() |>
+  kable() |>
+  kable_styling()
+```
+
+## References
+
+- <https://documentation.sas.com/doc/en/statug/15.2/statug_lifetest_details03.htm>
 
 ## Technical Annex
 
