@@ -662,20 +662,28 @@ dat_hf_cln |>
 The empirical estimator $\tilde{S}(t)$ can be used in the absence of censoring
 and is then the same as the KM estimator $\hat{S}_{KM}(t)$. Note that we are now
 explicitly ignoring the fact that some observations are censored for the sake of
-demonstrating the use of $\tilde{S}(t)$ and how it compares to
-$\hat{S}_{KM}(t)$.
+demonstrating the use of $\tilde{S}(t)$ and how it compares to $\hat{S}_{KM}(t)$.
 
 ```{r}
-#| label: tbl-hf-est-s-ee-01
-#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
-
-# Estimate S(t) using the empirical estimator
-dat_hf_cln |>
+# Estimate S(t) using the empirical estimator manually
+ee_fit_man <- dat_hf_cln |>
   group_by(time) |>
   summarize(n = n(), .groups = "drop") |>
   arrange(time) |>
-  mutate(S_tilde = (nrow(dat_hf_cln) - cumsum(n)) / nrow(dat_hf_cln)) |>
-  rename(`Event Time` = time, `Number of Events` = n, `Est. S(T)` = S_tilde) |>
+  mutate(S_tilde = (nrow(dat_hf_cln) - cumsum(n)) / nrow(dat_hf_cln))
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-ee-01
+#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
+
+ee_fit_man |>
+  select(
+    `Event Time` = time,
+    `Number of Events` = n,
+    `Est. S(T)` = S_tilde,
+  ) |>
   head(10) |>
   kable(digits = 3) |>
   kable_styling()
@@ -684,8 +692,8 @@ dat_hf_cln |>
 Or using the **survival** package.
 
 ```{r}
-# Estimate S(t) using the empirical estimator
-ee_fit <- survfit(Surv(time, rep(1, nrow(dat_hf_cln))) ~ 1, dat_hf_cln)
+# Estimate S(t) using the empirical estimator using the survival package
+ee_fit_srv <- survfit(Surv(time, rep(1, nrow(dat_hf_cln))) ~ 1, dat_hf_cln)
 ```
 
 ```{r}
@@ -693,14 +701,14 @@ ee_fit <- survfit(Surv(time, rep(1, nrow(dat_hf_cln))) ~ 1, dat_hf_cln)
 #| label: tbl-hf-est-s-ee-02
 #| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
 
-ee_fit |>
+ee_fit_srv |>
   tidy() |>
   select(
     `Event Time` = time,
     `Number at Risk` = n.risk,
     `Number of Events` = n.event,
     `Number Censored` = n.censor,
-    `Est. S(t)` = estimate
+    `Est. S(t)` = estimate,
   ) |>
   head(10) |>
   kable(digits = 3) |>
@@ -712,22 +720,22 @@ $S(t)$. The KM estimator $\hat{S}_{KM}(t)$ takes this into account.
 
 ```{r}
 # Estimate S(t) using the Kaplan-Meier (KM) estimator
-km_fit <- survfit(Surv(time, event) ~ 1, dat_hf_cln)
+km_fit_srv <- survfit(Surv(time, event) ~ 1, dat_hf_cln)
 ```
 
 ```{r}
 #| echo: false
-#| label: tbl-hf-est-s-km-02
+#| label: tbl-hf-est-s-km-01
 #| tbl-cap: "Estimates for S(t) produced using the KM estimator."
 
-km_fit |>
+km_fit_srv |>
   tidy() |>
   select(
     `Event Time` = time,
     `Number at Risk` = n.risk,
     `Number of Events` = n.event,
     `Number Censored` = n.censor,
-    `Est. S(t)` = estimate
+    `Est. S(t)` = estimate,
   ) |>
   head(10) |>
   kable(digits = 3) |>
@@ -744,7 +752,7 @@ $\tilde{S}(t)$ underestimates $S(t)$.
 #| label: fig-hf-est-s-ee-km
 #| fig-cap: "The estimates for S(t) produced using the empirical (EE) and KM estimator."
 
-list(ee_fit, km_fit) |>
+list(ee_fit_srv, km_fit_srv) |>
   ggsurvplot_combine(
     risk.table = FALSE,
     conf.int = FALSE,
@@ -758,7 +766,7 @@ Nelson-Aalen estimator for $\Lambda(t)$.
 
 ```{r}
 # Estimate S(t) using the Breslow estimator manually
-bl_fit_man <- km_fit |>
+bl_fit_man <- km_fit_srv |>
   tidy() |>
   select(time, n.risk, n.event, n.censor) |>
   mutate(
@@ -774,7 +782,15 @@ bl_fit_man <- km_fit |>
 #| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
 
 bl_fit_man |>
-  kable() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = bl_est,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
   kable_styling()
 ```
 
@@ -783,7 +799,7 @@ estimator.
 
 ```{r}
 # Estimate S(t) using the Breslow estimator using the survival package
-bl_fit_cmp <- survfit(Surv(time, event) ~ 1, dat_hf_cln, type = "fleming-harrington")
+bl_fit_srv <- survfit(Surv(time, event) ~ 1, dat_hf_cln, type = "fleming-harrington")
 ```
 
 ```{r}
@@ -791,9 +807,17 @@ bl_fit_cmp <- survfit(Surv(time, event) ~ 1, dat_hf_cln, type = "fleming-harring
 #| label: tbl-hf-est-s-bl-cmp
 #| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
 
-bl_fit_cmp |>
+bl_fit_srv |>
   tidy() |>
-  kable() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
   kable_styling()
 ```
 
