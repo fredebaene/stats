@@ -11,6 +11,206 @@ library(kableExtra, warn.conflicts = FALSE)
 
 This chapter outlines methods for survival analysis or time-to-event analysis.
 
+## Introduction
+
+In survival analysis or time-to-event analysis, the random variable $T$ is our
+variable of interest. This non-negative ($T \geq 0$) random variable represents
+the event time, failure time, or survival time. We need a **time origin**, a
+**time scale**, and a definition of the **event of interest** in order to define
+$T$.
+
+The variable $T$ can be discrete or continuous:
+
+$$
+T \in {0, 1, 2, ...} \text{ or } T \in (0, \inf)
+$$
+
+We define $U$ as the censoring time, which is the potential time during which
+the event must take place in order to observe the event time $T$. The
+observation time $X$ is then:
+
+$$
+X = min(U, T)
+$$
+
+If the event takes place and is observed, then the observation time $X$ equals
+the failure time (event time) $T$, otherwise it is the censoring time $U$. To
+indicate if $X$ equals $T$ or $U$, we define a new indicator variable $\delta$:
+
+$$
+\delta = \cases{
+1 \text{ if } T \leq U \\
+0 \text{ if } T > U
+}
+$$
+
+## Distribution
+
+### S(t)
+
+There are several functions that describe the distribution of $T$. The survival
+function $S(t)$ gives the probability that the event occurs after a particular
+time $T = t$:
+
+$$
+S(t) = P(T > t)
+$$
+
+### F(t)
+
+The cumulative distribution function $F(t)$ shows the probability that an event
+takes place by time $T = t$. The cumulative distribution function is sometimes
+called the cumulative incidence function:
+
+$$
+F(t) = P(T \leq t) = 1 - P(T > t) = 1 - S(t)
+$$
+
+### f(t)
+
+The function $f(t)$ is a probability density function
+if the variable $T$ is continuous and a probability mass function if $T$ is
+discrete.
+
+If $f(t)$ is a PMF, then:
+
+$$
+f(t) = P(T = t)
+$$
+
+otherwise:
+
+$$
+f(t) \cdot \Delta t = P(t < T < t + \Delta t)
+$$
+
+The survival function $S(t)$ can then also be defined in terms of $f(t)$. For
+a discrete event time $T$:
+
+$$
+S(t) = P(T > t) = \sum_{u > t} f(u)
+$$
+
+For a continuous event time $T$:
+
+$$
+S(t) = \int_{t}^{\inf} f(u) du
+$$
+
+### λ(t)
+
+The hazard function $\lambda(t)$ gives the instantaneous risk of the event
+occurring at $T = t$ given that the event has not yet occurred by $T = t$. The
+hazard is also called the instantaneous failure rate, force of mortality, or
+incidence. For a discrete event time $T$:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t-1)} = \frac{f(t)}{\sum_{u \geq t} f(u)}
+$$
+
+As an example, let us look at a sample of $n = 5$ patients. Let $T$ represent
+the survival time in months.
+
+```{r}
+#| echo: false
+#| label: tbl-haz-ex-01-dat
+#| tbl-cap: "Sample data to demonstrate the hazard function for a discrete event time."
+
+haz_ex_01_dat <- tibble(
+  `Patient ID` = seq(1, 5, 1),
+  `Event Time` = seq(1, 5, 1)
+)
+
+haz_ex_01_dat |>
+  kable() |>
+  kable_styling()
+```
+
+We now determine the probability density function $f(t)$, the survival function
+$S(t)$, and the hazard function $\lambda(t)$:
+
+```{r}
+#| echo: false
+#| label: tb-haz-ex-01-fns
+#| tbl-cap: "The values for the PDF, survival function, and hazard function for a discrete event time."
+
+haz_ex_01_fns <- haz_ex_01_dat |>
+  group_by(`Event Time`) |>
+  summarize(n = n(), .groups = "drop") |>
+  mutate(`f(t)` = n / sum(n), `S(t)` = (sum(n) - cumsum(n)) / sum(n)) |>
+  add_row(`Event Time` = 0, n = 0, `f(t)` = 0.0, `S(t)` = 1.0, .before = 1) |>
+  mutate(`λ(t)` = round(`f(t)` / lag(`S(t)`), 2)) |>
+  filter(n > 0)
+
+haz_ex_01_fns |>
+  kable() |>
+  kable_styling()
+```
+
+@fig-haz-ex-02-plt shows a plot representing the hazard for a continuous event
+time at time $T = t$. It is the conditional probability of the event occurring
+during a very small time interval $T \in (t, t + \Delta t)$ given that the event
+has not yet occurred by time $T = t$.
+
+```{r}
+#| echo: false
+#| label: fig-haz-ex-02-plt
+#| fig-cap: "PDF for a continuous event time showing the hazard."
+
+# Define the parameters for the distribution
+mu <- 100
+sigma <- 15
+t <- 130
+delta <- 0.05
+
+# Create a dataset with the values for X and their associated PDF values
+X <- mu + seq(-8, 8, length.out = 1001)*sigma
+haz_ex_02_dat <- tibble(event_time = X, pdf = dnorm(x = X, mean = mu, sd = sigma))
+haz_ex_02_dat <- haz_ex_02_dat |> filter(event_time > 0)
+
+ggplot(haz_ex_02_dat, aes(x = event_time, y = pdf)) +
+  geom_line() +
+  geom_area(data = haz_ex_02_dat |> filter(event_time >= t), fill = "steelblue", alpha = 0.5) +
+  geom_area(data = haz_ex_02_dat |> filter(event_time >= t, event_time < t + 1.0), fill = "darkred", alpha = 0.5) +
+  labs(x = "Event Time (T)", y = NULL) +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0))
+```
+
+### Λ(t)
+
+The cumulative hazard function is defined as:
+
+$$
+\Lambda(t) = \sum_{u \leq t} \lambda(u)
+$$
+
+or for a continuous event time:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du
+$$
+
+### Mean and Median
+
+The mean survival time is defined as follows for a discrete event time:
+
+$$
+\mu = \sum_{u \in \Omega} u \cdot f(u)
+$$
+
+And for a continuous event time:
+
+$$
+\mu = \int_{0}^{\inf} u \cdot f(u) du 
+$$
+
+The median survival time $\tau$ is defined as:
+
+$$
+S(\tau) = 0.5
+$$
+
 ## Dataset
 
 Let the random variable $T$ represent the observation time and $\delta$ represent
@@ -36,15 +236,13 @@ dat_wo_cens |>
 
 ## Survival Function
 
-The survival function $S(t)$ is defined as:
-
-$$
-S(t) = P(T > t)
-$$
+There are several parametric and non-parametric estimators for the survival
+function $S(t)$ (and the hazard function $\lambda(t)$).
 
 ### Empirical Estimator
 
-The empirical estimator $\tilde{S}(t)$ can be used in the absence of censoring:
+The empirical estimator $\tilde{S}(t)$ is a non-parametric estimator that can be
+used in the absence of censoring:
 
 $$
 \tilde{S}(t) = \frac{\sum_{i = 1}^{n} (T_i > t)}{n}
@@ -64,6 +262,7 @@ surv_estimates <- dat_wo_cens |>
 
 ```{r}
 #| echo: false
+
 surv_estimates |>
   kable() |>
   kable_styling()
@@ -106,7 +305,7 @@ Using the **survival** package:
 
 ```{r}
 # Use the survival package to estimate S(t) using the empirical estimator
-km <- survfit(Surv(Time, Delta) ~ 1, dat_wo_cens)
+km <- survfit(Surv(Time, Delta) ~ 1, dat_wo_cens, conf.type = "none")
 ```
 
 ```{r}
@@ -115,8 +314,8 @@ summary(km)
 
 ### Kaplan-Meier Estimator
 
-The Kaplan-Meier (KM) estimator is the most popular approach to estimate $S(t)$.
-We consider a new dataset, this time with censoring.
+The Kaplan-Meier (KM) estimator is the most popular non-parametric estimator for
+$S(t)$. We consider a new dataset, this time with censoring.
 
 ```{r}
 #| echo: false
@@ -250,6 +449,21 @@ surv_estimates |>
   kable_styling()
 ```
 
+We can use the **survival** package with the correct options to generate the
+same CI limits. Note that CI limits smaller than $0$ and greater than $1$ are
+capped at these values.
+
+```{r}
+# Estimate the survival function with the KM estimator
+km_fit <- survfit(Surv(Time, Delta) ~ 1, dat_wi_cens, conf.type = "plain")
+```
+
+```{r}
+#| echo: false
+
+summary(km_fit)
+```
+
 Seeing the survival function $S(t)$ outputs probabilities, confidence limits
 smaller than $0$ and greater than $1$ do not make sense. Therefore, we transform
 $\hat{S}(t)$ such that it is no longer bounded:
@@ -269,4 +483,169 @@ confidence interval back, we have:
 
 $$
 \big[ \hat{S}(t)^{exp(A)}, \hat{S}(t)^{exp(-A)}]
+$$
+
+```{r}
+surv_estimates
+```
+
+### Exponential Distribution
+
+Assume the event time $T$ follows an exponential distribution:
+
+$$
+T \sim \exp (\lambda)
+$$
+
+The probability density function $f(t)$ is defined as:
+
+$$
+f(t) = \lambda \cdot \exp (- \lambda t) \text{ for } t \geq 0
+$$
+
+The survival function $S(t)$ is defined as:
+
+$$
+S(t) = \int_{t}^{\inf} f(u) du
+$$
+
+Using integration by substitution, we have:
+
+$$
+\begin{align}
+\int f(t) dt &= \int \lambda \exp (- \lambda t)
+\end{align}
+$$
+
+We choose the following:
+
+$$
+w = - \lambda t 
+  \leftrightarrow \frac{dw}{dt} = - \lambda 
+  \leftrightarrow - dw = \lambda dt
+$$
+
+Which we can substitute:
+
+$$
+\begin{align}
+\int f(t) dt &= \int \lambda \exp (- \lambda t) dt \\
+  &= \int - \exp(w) dw \\
+  &= - \int \exp(w) dw \\
+  &= - \exp(w) = - \exp(- \lambda t)
+\end{align}
+$$
+
+Bringing this back to:
+
+$$
+\begin{align}
+S(t) &= \int_{t}^{\inf} f(u) du \\
+  &= \big[ - \exp(- \lambda u) \big]_t^{\inf} \\
+  &= - \exp(- \lambda \inf) - \big( - \exp(- \lambda t) \big) \\
+  &= \exp(- \lambda t) - \exp(- \lambda \inf) \\
+  &= \exp(- \lambda t)
+\end{align}
+$$
+
+The hazard function $\lambda(t)$ is defined as:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t)} 
+  = \frac{\lambda \exp(- \lambda t)}{\exp(- \lambda t)} 
+  = \lambda
+$$
+
+In other words, an exponentially distributed event time $T$ implies a
+time-constant hazard rate $\lambda$. For the cumulative hazard function
+$\Lambda(t)$:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du 
+  = \int_{0}^{t} \lambda du  
+  = \lambda t
+$$
+
+Note that under the assumption of an exponential distribution for $T$, there is
+only one parameter to estimate, the rate parameter $\lambda$. The maximum
+likelihood estimator $\hat{\lambda}$ is:
+
+$$
+\hat{\lambda} = \frac
+  {\text{number of events}}
+  {\text{total observation time}}
+$$
+
+The median event time $\tau$ is defined as:
+
+$$
+S(\tau) = 0.5 = \exp(- \lambda \tau) 
+  \leftrightarrow \tau = \frac{- \log(0.5)}{\lambda}
+$$
+
+## Technical Annex
+
+### S(t) and λ(t)
+
+The hazard function $\lambda(t)$ is defined as:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t)}
+$$
+
+$S(t)$ is defined as:
+
+$$
+S(t) = 1 - F(t) \leftrightarrow F(t) = 1 - S(t)
+$$
+
+Taking the derivative of $R(t)$:
+
+$$
+f(t) = F'(t) = \frac{d}{dt} [1 - S(t)] = - \frac{d}{dt} S(t)
+$$
+
+or:
+
+$$
+f(t) = - \frac{d}{dt} S(t) \leftrightarrow - f(t) = \frac{d}{dt} S(t)
+$$
+
+We can now show the following:
+
+$$
+- \frac{d}{dt} \big[ \log S(t) \big] 
+  = - \frac{1}{S(t)} S'(t) 
+  = - \frac{-f(t)}{S(t)} 
+  = \frac{f(t)}{S(t)}
+$$
+
+### S(t) and Λ(t)
+
+The cumulative hazard function $\Lambda(t)$ is defined as:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du
+$$
+
+We can rewrite this as:
+
+$$
+\begin{align}
+\Lambda(t) 
+  &= \int_{0}^{t} \lambda(u) du \\
+  &= \int_{0}^{t} \frac{f(u)}{S(u)} du \\
+  &= \int_{0}^{t} - \frac{d}{du} \log S(u) du \\
+  &= \big[ - \log S(u) \big]_{0}^{t} \\
+  &= - \log S(t) - (- \log S(0)) \\
+  &= - \log S(t) + \log S(0) \\
+  &= - \log S(t) + \log 1 \\
+  &= - \log S(t)
+\end{align}
+$$
+
+Rewrite as:
+
+$$
+\Lambda(t) = - \log S(t) \leftrightarrow S(t) = \exp \big( - \Lambda(t) \big)
 $$
