@@ -1,0 +1,13 @@
+# Concepts
+
+This chapter outlines several concepts that are encountered within statistics.
+
+## Definitions
+
+### Endpoints
+
+An endpoint is a patient-level quantity for which there is one value per
+patient. It can be derived from a single observation or measurement per patient,
+or it can be a composite endpoint. An example can be the occurrence of a
+cardiovascular event, which is defined as the occurrence of a stroke, a
+myocardial infarction, or another cardiovascular event.

@@ -1,0 +1,893 @@
+# Survival
+
+```{r}
+#| include: false
+
+library(tidyverse, warn.conflicts = FALSE)
+library(labelled, warn.conflicts = FALSE)
+library(survival, warn.conflicts = FALSE)
+library(kableExtra, warn.conflicts = FALSE)
+library(fs, warn.conflicts = FALSE)
+library(janitor, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
+library(broom, warn.conflicts = FALSE)
+library(survminer, warn.conflicts = FALSE)
+```
+
+This chapter outlines methods for survival analysis or time-to-event analysis.
+
+## Introduction
+
+In survival analysis or time-to-event analysis, the random variable $T$ is our
+variable of interest. This non-negative ($T \geq 0$) random variable represents
+the event time or failure time (in survival analysis, it represents survival
+time). A **time origin**, a **time scale**, and a definition of the **event of
+interest** are required to define $T$.
+
+The variable $T$ can be discrete or continuous:
+
+$$
+T \in {0, 1, 2, ...} \text{ or } T \in (0, \infty)
+$$
+
+We define $U$ as the censoring time, which is the potential time during which
+the event must take place in order to observe the event time $T$. The
+observation time $X$ is then:
+
+$$
+X = min(U, T)
+$$
+
+If the event takes place and is observed, then the observation time $X$ equals
+the failure time (event time) $T$, otherwise it equals the censoring time $U$.
+To indicate if $X$ equals $T$ or $U$, we define a new indicator variable
+$\delta$:
+
+$$
+\delta = \cases{
+1 \text{ if } T \leq U \\
+0 \text{ if } T > U
+}
+$$
+
+## Distribution
+
+The distribution of an event time $T$ can be characterized using several
+functions.
+
+### S(t)
+
+The survival function $S(t)$ gives the probability that the event occurs after a
+particular time $T = t$:
+
+$$
+S(t) = P(T > t)
+$$
+
+### F(t)
+
+The cumulative distribution function $F(t)$ gives the probability that an event
+takes place by time $T = t$:
+
+$$
+F(t) = P(T \leq t) = 1 - P(T > t) = 1 - S(t)
+$$
+
+The cumulative distribution function is sometimes called the cumulative
+incidence function. Note that the definitions for $S(t)$ and $F(t)$ are the same
+regardless whether $T$ is discrete or continuous.
+
+### f(t)
+
+The probability mass function $f(t)$ for a discrete event time $T$ is defined
+as:
+
+$$
+f(t) = P(T = t)
+$$
+
+The probability density function $f(t)$ for a continuous event time $T$ is
+defined as:
+
+$$
+f(t) \cdot \Delta t \approx P(t < T < t + \Delta t)
+$$
+
+The survival function $S(t)$ can then be defined in terms of $f(t)$. For a
+discrete event time $T$:
+
+$$
+S(t) = P(T > t) = \sum_{u > t} f(u)
+$$
+
+For a continuous event time $T$:
+
+$$
+S(t) = \int_{t}^{\infty} f(u) du
+$$
+
+### λ(t)
+
+The hazard function $\lambda(t)$ gives the instantaneous risk of the event
+occurring at time $T = t$ given that the event has not yet occurred by $T = t$.
+The hazard is also called the instantaneous failure rate, force of mortality, or
+incidence. For a discrete event time $T$:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t-1)} = \frac{f(t)}{\sum_{u \geq t} f(u)}
+$$
+
+As an example, let us look at a sample of $n = 5$ patients. Let $T$ represent
+the survival time in months.
+
+```{r}
+#| echo: false
+#| label: tbl-haz-ex-01-dat
+#| tbl-cap: "Sample data to demonstrate the hazard function for a discrete event time."
+
+haz_ex_01_dat <- tibble(
+  `Patient ID` = seq(1, 5, 1),
+  `Event Time` = seq(1, 5, 1)
+)
+
+haz_ex_01_dat |>
+  kable() |>
+  kable_styling()
+```
+
+We now determine the probability density function $f(t)$, the survival function
+$S(t)$, and the hazard function $\lambda(t)$:
+
+```{r}
+#| echo: false
+#| label: tb-haz-ex-01-fns
+#| tbl-cap: "The values for the PDF, survival function, and hazard function for a discrete event time."
+
+haz_ex_01_fns <- haz_ex_01_dat |>
+  group_by(`Event Time`) |>
+  summarize(n = n(), .groups = "drop") |>
+  mutate(`f(t)` = n / sum(n), `S(t)` = (sum(n) - cumsum(n)) / sum(n)) |>
+  add_row(`Event Time` = 0, n = 0, `f(t)` = 0.0, `S(t)` = 1.0, .before = 1) |>
+  mutate(`λ(t)` = round(`f(t)` / lag(`S(t)`), 2)) |>
+  filter(n > 0)
+
+haz_ex_01_fns |>
+  kable() |>
+  kable_styling()
+```
+
+@fig-haz-ex-02-plt shows a plot representing the hazard for a continuous event
+time at time $T = t$. It is the conditional probability of the event occurring
+during a very small time interval $T \in (t, t + \Delta t)$ given that the event
+has not yet occurred by time $T = t$.
+
+```{r}
+#| echo: false
+#| label: fig-haz-ex-02-plt
+#| fig-cap: "PDF for a continuous event time showing the hazard."
+
+# Define the parameters for the distribution
+mu <- 100
+sigma <- 15
+t <- 130
+delta <- 0.05
+
+# Create a dataset with the values for X and their associated PDF values
+X <- mu + seq(-8, 8, length.out = 1001)*sigma
+haz_ex_02_dat <- tibble(event_time = X, pdf = dnorm(x = X, mean = mu, sd = sigma))
+haz_ex_02_dat <- haz_ex_02_dat |> filter(event_time > 0)
+
+ggplot(haz_ex_02_dat, aes(x = event_time, y = pdf)) +
+  geom_line() +
+  geom_area(data = haz_ex_02_dat |> filter(event_time >= t), fill = "steelblue", alpha = 0.5) +
+  geom_area(data = haz_ex_02_dat |> filter(event_time >= t, event_time < t + 1.0), fill = "darkred", alpha = 0.5) +
+  labs(x = "Event Time (T)", y = NULL) +
+  theme_classic() +
+  scale_y_continuous(expand = c(0, 0))
+```
+
+### Λ(t)
+
+The cumulative hazard function $\Lambda(t)$ for a discrete event time $T$ is
+defined as:
+
+$$
+\Lambda(t) = \sum_{u \leq t} \lambda(u)
+$$
+
+For a continuous event time $T$:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du
+$$
+
+### Mean and Median
+
+The mean survival time is defined as follows for a discrete event time $T$:
+
+$$
+\mu = \sum_{u \in \Omega} u \cdot f(u)
+$$
+
+And for a continuous event time $T$:
+
+$$
+\mu = \int_{0}^{\infty} u \cdot f(u) du 
+$$
+
+The median survival time $\tau$ is defined as:
+
+$$
+S(\tau) = 0.5
+$$
+
+## Dataset
+
+Let the random variable $X$ represent the observation time and $\delta$ represent
+an indicator variable for which $\delta = 1$ if the event occurred and $\delta = 0$
+otherwise.
+
+We consider the following dataset where the event of interest is death.
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wo-cens
+#| tbl-cap: "Sample data with time to death (in weeks) and no censoring."
+
+times <- c(1, 1, 2, 2, 3, 4, 4, 5, 5, 8, 8, 8, 8, 11, 11, 12, 12, 15, 17, 22, 23)
+
+dat_wo_cens <- tibble(Time = times, Delta = rep(1, 21)) |>
+  set_variable_labels(Time = "Time to death")
+
+dat_wo_cens |>
+  kable() |>
+  kable_styling()
+```
+
+## Estimation
+
+There are several parametric and non-parametric estimators for the survival
+function $S(t)$ (and the hazard function $\lambda(t)$).
+
+### Empirical Estimator
+
+The empirical estimator $\tilde{S}(t)$ is a non-parametric estimator for $S(t)$.
+It is unbiased in the absence of censoring. If there is no censoring, then
+$\delta_i = 1$ and $X_i = T_i$ for every patient $i$.
+
+$$
+\tilde{S}(t) = \frac{\sum_{i = 1}^{n} (X_i > t)}{n}
+$$
+
+with $X_i$ the observation time for patient $i$.
+
+```{r}
+# Estimate the survival function using the empirical estimator
+surv_estimates <- dat_wo_cens |>
+  group_by(Time) |>
+  summarise(d = n(), .groups = "drop") |>
+  mutate(d_cum = cumsum(d), n = sum(d)) |>
+  mutate(S_tilde = (n - d_cum) / n)
+```
+
+```{r}
+#| echo: false
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+If we look at the data, we can see that $\tilde{S}(4) = 0.667$. There are $7$
+patients for which the event occurs before or during week 4. In other words,
+there are $21 - 7 = 14$ patients for which the event occurs after week 4.
+Therefore, the estimated probability of the event time $T$ being larger than $4$
+is:
+
+$$
+\hat{P}(T > 4) = \tilde{S}(4) = \frac{14}{21} = 0.667
+$$
+
+We can approach this as a binomial distribution with parameters $p$ and $n$. The
+standard error of $\hat{p}$ is calculated as:
+
+$$
+SE(\hat{p}) = \sqrt{\frac{p \cdot (1 - p)}{n}}
+$$
+
+Using the data:
+
+```{r}
+# Calculate the standard error for the estimates
+surv_estimates <- surv_estimates |>
+  mutate(S_tilde_se = sqrt((S_tilde*(1-S_tilde))/n))
+```
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wo-cens-surv-est
+#| tbl-cap: "Estimates for the survival function using the empirical estimator."
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+Using the **survival** package:
+
+```{r}
+# Use the survival package to estimate S(t) using the empirical estimator
+km <- survfit(Surv(Time, Delta) ~ 1, dat_wo_cens, conf.type = "none")
+```
+
+```{r}
+summary(km)
+```
+
+### Kaplan-Meier Estimator
+
+The Kaplan-Meier (KM) estimator is the most popular non-parametric estimator for
+$S(t)$. We consider a new dataset, this time with censoring.
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wi-cens
+#| tbl-cap: "Sample data with time to death (in weeks) and censoring."
+
+times <- c(6, 6, 6, 6, 7, 9, 10, 10, 11, 13, 16, 17, 19, 20, 22, 23, 25, 32, 32, 34, 35)
+cens <- c(0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0)
+
+dat_wi_cens <- tibble(Time = times, Delta = cens) |>
+  set_variable_labels(Time = "Time to death")
+
+dat_wi_cens |>
+  kable() |>
+  kable_styling()
+```
+
+If we use $\tilde{S}(t)$ to estimate $S(6)$, we calculate the following
+estimate:
+
+$$
+\tilde{S}(6) = \frac{17}{21} = 0.8095238
+$$
+
+However, if we have a look at the dataset, we can see that for the four patients
+that have an observation time of $T = 6$, there is one patient that was censored
+at $T = 6$. We assume the patient survived until the end of week 6. In other
+words, this patient did not have the event before or during week 6, which
+implies the event occurred after week 6. Therefore, using $\tilde{S}(t)$ results
+in an **underestimation** of the survival probability $S(t)$.
+
+We must take into account censoring when estimating $S(t)$. The KM estimator
+$\hat{S}_{KM}(t)$ takes this into account:
+
+$$
+\hat{S}(t)
+  = \prod_{j \leq t} \frac{r_j - d_j}{r_j}
+  = \prod_{j \leq t} 1 - \frac{d_j}{r_j}
+  = \prod_{j \leq t} 1 - \hat{\lambda}_j
+$$
+
+with $j = 1, 2, ..., K$ the set of $K$ distinct event times (event or
+censoring), $d_j$ the number of events at $j$, $r_j$ the number at risk at
+$j$, and $c_j$ the number of censored observations at $j$.
+
+The **number at risk** is an important notion. It is the number of individuals
+that risk having the event. For a particular time interval, the number at risk
+is the number of individuals that _enters_ that time interval without having had
+the event or being censored prior to the time interval.
+
+We estimate $S(t)$ using $\hat{S}(t)$:
+
+```{r}
+#| echo: false
+
+# Calculate the number at risk (r), the number of events (d), and the number of
+# censored observations (c) for each time interval j
+surv_estimates <- dat_wi_cens |>
+  group_by(Time, Delta) |>
+  summarise(n = n(), .groups = "drop") |>
+  pivot_wider(id_cols = Time, names_from = Delta, values_from = n) |>
+  rename(j = Time, c_j = `0`, d_j = `1`) |>
+  select(j, d_j, c_j) |>
+  replace_na(list(d_j = 0, c_j = 0)) |>
+  mutate(r_j = (nrow(dat_wi_cens) - cumsum(d_j) - cumsum(c_j) + d_j + c_j))
+
+# Calculate the conditional probability of the event occurring and survivng
+# a particular time interval
+surv_estimates <- surv_estimates |>
+  mutate(
+    prob_evnt = d_j / r_j,
+    prob_surv = 1 - prob_evnt,
+    S_hat = cumprod(prob_surv)
+  )
+```
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wi-cens-surv-est
+#| tbl-cap: "The conditional event and survival probabilities per time interval."
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+Note that if there is no censoring, then $\hat{S}(t) = \tilde{S}(t)$. For large
+$n$, we have:
+
+$$
+\hat{S}(t) \sim N \big[ S(t), S(t) \cdot (1 - S(t) / n) \big]
+$$
+
+We can use Greenwood's formula to estimate the variance of $\hat{S}(t)$:
+
+$$
+\widehat{Var}(\hat{S}(t))
+  = \hat{S}^2(t) \cdot \sum_{j \leq t} \frac{d_j}{r_j (r_j - d_j)}
+$$
+
+Using this, we can construct 95% confidence intervals as:
+
+$$
+\hat{S}(t) \pm z_{1 - \frac{\alpha}{2}} \cdot SE(\hat{S}(t))
+$$
+
+for which we can estimate the standard error of $\hat{S}(t)$ using Greenwood's
+formula. This approach, however, yields limits for the confidence interval that
+are smaller than $0$ or larger than $1$.
+
+```{r}
+#| echo: false
+
+# Calculate the limits for the confidence interval
+sig_level <- 0.05
+z_value <- qnorm(p = 1 - sig_level/2)
+
+surv_estimates <- surv_estimates |>
+  mutate(est_var_S_hat = S_hat^2 * cumsum(d_j / (r_j*(r_j - d_j)))) |>
+  mutate(est_se_S_hat = sqrt(est_var_S_hat)) |>
+  mutate(ci_ll = S_hat - z_value*est_se_S_hat, ci_ul = S_hat + z_value*est_se_S_hat)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wi-cens-ci
+#| tbl-cap: "KM estimates for the survival function with confidence intervals."
+
+surv_estimates |>
+  kable() |>
+  kable_styling()
+```
+
+We can use the **survival** package with the correct options to generate the
+same CI limits. Note that CI limits smaller than $0$ and greater than $1$ are
+capped at these values.
+
+```{r}
+# Estimate the survival function with the KM estimator
+km_fit <- survfit(Surv(Time, Delta) ~ 1, dat_wi_cens, conf.type = "plain")
+```
+
+```{r}
+#| echo: false
+
+summary(km_fit)
+```
+
+Seeing the survival function $S(t)$ outputs probabilities, confidence limits
+smaller than $0$ and greater than $1$ do not make sense. Therefore, we transform
+$\hat{S}(t)$ such that it is no longer bounded:
+
+$$
+\hat{L}(t) = log \big( -log (\hat{S}(t)) \big)
+$$
+
+We construct a confidence interval around $\hat{L}(t)$:
+
+$$
+\big[ \hat{L}(t) - A, \hat{L}(t) + A \big]
+$$
+
+with $A = z_{1 - \alpha / 2} \cdot \hat{SE}(\hat{L}(t))$. If we transform this
+confidence interval back, we have:
+
+$$
+\big[ \hat{S}(t)^{exp(A)}, \hat{S}(t)^{exp(-A)}]
+$$
+
+```{r}
+surv_estimates
+```
+
+### Nelson-Aalen Estimator
+
+The Nelson-Aalen (NA) estimator is a non-parametric estimator for $\Lambda(t)$,
+and is defined as:
+
+$$
+\hat{\Lambda}_{NA}(t) = \sum_{u \leq t} \hat{\lambda}_u
+$$
+
+with $\hat{\lambda}_u = d_u / r_u$ ($d_u$ the number of events and $r_u$ the
+number at risk for $T = u$).
+
+### Breslow Estimator
+
+Using $\hat{\Lambda}_{NA}$, we can construct the Breslow estimator for $S(t)$:
+
+$$
+\hat{S}_{B}(t) = \exp(- \hat{\Lambda}_{NA}(t))
+$$
+
+### Exponential Distribution
+
+Assume the event time $T$ follows an exponential distribution:
+
+$$
+T \sim \exp (\lambda)
+$$
+
+The probability density function $f(t)$ is defined as:
+
+$$
+f(t) = \lambda \cdot \exp (- \lambda t) \text{ for } t \geq 0
+$$
+
+The survival function $S(t)$ is defined as:
+
+$$
+S(t) = \int_{t}^{\infty} f(u) du
+$$
+
+Using integration by substitution, we have:
+
+$$
+\begin{align}
+\int f(t) dt &= \int \lambda \exp (- \lambda t)
+\end{align}
+$$
+
+We choose the following:
+
+$$
+w = - \lambda t 
+  \leftrightarrow \frac{dw}{dt} = - \lambda 
+  \leftrightarrow - dw = \lambda dt
+$$
+
+Which we can substitute:
+
+$$
+\begin{align}
+\int f(t) dt &= \int \lambda \exp (- \lambda t) dt \\
+  &= \int - \exp(w) dw \\
+  &= - \int \exp(w) dw \\
+  &= - \exp(w) = - \exp(- \lambda t)
+\end{align}
+$$
+
+Bringing this back to:
+
+$$
+\begin{align}
+S(t) &= \int_{t}^{\infty} f(u) du \\
+  &= \big[ - \exp(- \lambda u) \big]_t^{\infty} \\
+  &= - \exp(- \lambda \infty) - \big( - \exp(- \lambda t) \big) \\
+  &= \exp(- \lambda t) - \exp(- \lambda \infty) \\
+  &= \exp(- \lambda t)
+\end{align}
+$$
+
+The hazard function $\lambda(t)$ is defined as:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t)} 
+  = \frac{\lambda \exp(- \lambda t)}{\exp(- \lambda t)} 
+  = \lambda
+$$
+
+In other words, an exponentially distributed event time $T$ implies a
+time-constant hazard rate $\lambda$. For the cumulative hazard function
+$\Lambda(t)$:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du 
+  = \int_{0}^{t} \lambda du  
+  = \lambda t
+$$
+
+Note that under the assumption of an exponential distribution for $T$, there is
+only one parameter to estimate, the rate parameter $\lambda$. The maximum
+likelihood estimator $\hat{\lambda}$ is:
+
+$$
+\hat{\lambda} = \frac
+  {\text{number of events}}
+  {\text{total observation time}}
+$$
+
+The median event time $\tau$ is defined as:
+
+$$
+S(\tau) = 0.5 = \exp(- \lambda \tau) 
+  \leftrightarrow \tau = \frac{- \log(0.5)}{\lambda}
+$$
+
+## Case
+
+To demonstrate the methods explained in this chapter, we use the **Heart
+Failure** dataset. This dataset can be found at
+[Kaggle: Heart Failure Dataset](https://www.kaggle.com/datasets/andrewmvd/heart-failure-clinical-data).
+
+```{r}
+#| echo: false
+
+# Import data
+dat_hf_raw <- read_csv(
+  file = path("data", "heart_failure.csv"),
+  col_types = "ccccccccccccc",
+)
+
+# Clean data
+dat_hf_cln <- dat_hf_raw |>
+  clean_names() |>
+  rename_with(.fn = ~ str_c(.x, "__src__")) |>
+  mutate(
+    time = parse_integer(time__src__),
+    event = parse_integer(death_event__src__),
+  ) |>
+  set_variable_labels(time = "Time (days)", event = "Died") |>
+  select(time, event)
+```
+
+The dataset contains demographic, clinical, and laboratory data on 299 patients,
+who have been followed up on and for who death events were registered.
+@tbl-hf-dat-ex shows the available data for the first 10 patients in the heart
+failure dataset.
+
+```{r}
+#| echo: false
+#| label: tbl-hf-dat-ex
+#| tbl-cap: "Available data for the first 10 patients in the heart failure dataset."
+
+dat_hf_cln |>
+  head(10) |>
+  kable(col.names = c("Observation Time (Days)", "Event Indicator")) |>
+  kable_styling()
+```
+
+
+The empirical estimator $\tilde{S}(t)$ can be used in the absence of censoring
+and is then the same as the KM estimator $\hat{S}_{KM}(t)$. Note that we are now
+explicitly ignoring the fact that some observations are censored for the sake of
+demonstrating the use of $\tilde{S}(t)$ and how it compares to $\hat{S}_{KM}(t)$.
+
+```{r}
+# Estimate S(t) using the empirical estimator manually
+ee_fit_man <- dat_hf_cln |>
+  group_by(time) |>
+  summarize(n = n(), .groups = "drop") |>
+  arrange(time) |>
+  mutate(S_tilde = (nrow(dat_hf_cln) - cumsum(n)) / nrow(dat_hf_cln))
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-ee-01
+#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
+
+ee_fit_man |>
+  select(
+    `Event Time` = time,
+    `Number of Events` = n,
+    `Est. S(T)` = S_tilde,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+Or using the **survival** package.
+
+```{r}
+# Estimate S(t) using the empirical estimator using the survival package
+ee_fit_srv <- survfit(Surv(time, rep(1, nrow(dat_hf_cln))) ~ 1, dat_hf_cln)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-ee-02
+#| tbl-cap: "Estimates for S(t) produced using the empirical estimator."
+
+ee_fit_srv |>
+  tidy() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+In the case of censoring, the empirical estimator $\tilde{S}(t)$ underestimates
+$S(t)$. The KM estimator $\hat{S}_{KM}(t)$ takes this into account.
+
+```{r}
+# Estimate S(t) using the Kaplan-Meier (KM) estimator
+km_fit_srv <- survfit(Surv(time, event) ~ 1, dat_hf_cln)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-km-01
+#| tbl-cap: "Estimates for S(t) produced using the KM estimator."
+
+km_fit_srv |>
+  tidy() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+@fig-hf-est-s-ee-km shows the estimates for $S(t)$ produced using the empirical
+estimator $\tilde{S}(t)$, assuming no censoring, and the KM estimator
+$\hat{S}_{KM}(t)$, taking into account censoring. By ignoring the censoring,
+$\tilde{S}(t)$ underestimates $S(t)$.
+
+```{r}
+#| echo: false
+#| label: fig-hf-est-s-ee-km
+#| fig-cap: "The estimates for S(t) produced using the empirical (EE) and KM estimator."
+
+list(ee_fit_srv, km_fit_srv) |>
+  ggsurvplot_combine(
+    risk.table = FALSE,
+    conf.int = FALSE,
+    legend.labs = c("EE", "KM"),
+    censor = FALSE
+  )
+```
+
+If we want to estimate $S(t)$ using $\hat{S}_{B}(t)$, we must first use the
+Nelson-Aalen estimator for $\Lambda(t)$.
+
+```{r}
+# Estimate S(t) using the Breslow estimator manually
+bl_fit_man <- km_fit_srv |>
+  tidy() |>
+  select(time, n.risk, n.event, n.censor) |>
+  mutate(
+    haz_est = n.event / n.risk,
+    na_est = cumsum(haz_est),
+    bl_est = exp(-na_est),
+  )
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-bl-man
+#| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
+
+bl_fit_man |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = bl_est,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+We can also use the **survival** package to estimate $S(t)$ using the Breslow
+estimator.
+
+```{r}
+# Estimate S(t) using the Breslow estimator using the survival package
+bl_fit_srv <- survfit(Surv(time, event) ~ 1, dat_hf_cln, type = "fleming-harrington")
+```
+
+```{r}
+#| echo: false
+#| label: tbl-hf-est-s-bl-cmp
+#| fig-cap: "The estimates for S(t) produced using the Breslow estimator."
+
+bl_fit_srv |>
+  tidy() |>
+  select(
+    `Event Time` = time,
+    `Number at Risk` = n.risk,
+    `Number of Events` = n.event,
+    `Number Censored` = n.censor,
+    `Est. S(t)` = estimate,
+  ) |>
+  head(10) |>
+  kable(digits = 3) |>
+  kable_styling()
+```
+
+## References
+
+- <https://documentation.sas.com/doc/en/statug/15.2/statug_lifetest_details03.htm>
+
+## Technical Annex
+
+### S(t) and λ(t)
+
+The hazard function $\lambda(t)$ is defined as:
+
+$$
+\lambda(t) = \frac{f(t)}{S(t)}
+$$
+
+$S(t)$ is defined as:
+
+$$
+S(t) = 1 - F(t) \leftrightarrow F(t) = 1 - S(t)
+$$
+
+Taking the derivative of $R(t)$:
+
+$$
+f(t) = F'(t) = \frac{d}{dt} [1 - S(t)] = - \frac{d}{dt} S(t)
+$$
+
+or:
+
+$$
+f(t) = - \frac{d}{dt} S(t) \leftrightarrow - f(t) = \frac{d}{dt} S(t)
+$$
+
+We can now show the following:
+
+$$
+- \frac{d}{dt} \big[ \log S(t) \big] 
+  = - \frac{1}{S(t)} S'(t) 
+  = - \frac{-f(t)}{S(t)} 
+  = \frac{f(t)}{S(t)}
+$$
+
+### S(t) and Λ(t)
+
+The cumulative hazard function $\Lambda(t)$ is defined as:
+
+$$
+\Lambda(t) = \int_{0}^{t} \lambda(u) du
+$$
+
+We can rewrite this as:
+
+$$
+\begin{align}
+\Lambda(t) 
+  &= \int_{0}^{t} \lambda(u) du \\
+  &= \int_{0}^{t} \frac{f(u)}{S(u)} du \\
+  &= \int_{0}^{t} - \frac{d}{du} \log S(u) du \\
+  &= \big[ - \log S(u) \big]_{0}^{t} \\
+  &= - \log S(t) - (- \log S(0)) \\
+  &= - \log S(t) + \log S(0) \\
+  &= - \log S(t) + \log 1 \\
+  &= - \log S(t)
+\end{align}
+$$
+
+Rewrite as:
+
+$$
+\Lambda(t) = - \log S(t) \leftrightarrow S(t) = \exp \big( - \Lambda(t) \big)
+$$
