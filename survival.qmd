@@ -15,14 +15,14 @@ This chapter outlines methods for survival analysis or time-to-event analysis.
 
 In survival analysis or time-to-event analysis, the random variable $T$ is our
 variable of interest. This non-negative ($T \geq 0$) random variable represents
-the event time, failure time, or survival time. We need a **time origin**, a
-**time scale**, and a definition of the **event of interest** in order to define
-$T$.
+the event time or failure time (in survival analysis, it represents survival
+time). A **time origin**, a **time scale**, and a definition of the **event of
+interest** are required to define $T$.
 
 The variable $T$ can be discrete or continuous:
 
 $$
-T \in {0, 1, 2, ...} \text{ or } T \in (0, \inf)
+T \in {0, 1, 2, ...} \text{ or } T \in (0, \infty)
 $$
 
 We define $U$ as the censoring time, which is the potential time during which
@@ -34,8 +34,9 @@ X = min(U, T)
 $$
 
 If the event takes place and is observed, then the observation time $X$ equals
-the failure time (event time) $T$, otherwise it is the censoring time $U$. To
-indicate if $X$ equals $T$ or $U$, we define a new indicator variable $\delta$:
+the failure time (event time) $T$, otherwise it equals the censoring time $U$.
+To indicate if $X$ equals $T$ or $U$, we define a new indicator variable
+$\delta$:
 
 $$
 \delta = \cases{
@@ -46,11 +47,13 @@ $$
 
 ## Distribution
 
+The distribution of an event time $T$ can be characterized using several
+functions.
+
 ### S(t)
 
-There are several functions that describe the distribution of $T$. The survival
-function $S(t)$ gives the probability that the event occurs after a particular
-time $T = t$:
+The survival function $S(t)$ gives the probability that the event occurs after a
+particular time $T = t$:
 
 $$
 S(t) = P(T > t)
@@ -58,34 +61,35 @@ $$
 
 ### F(t)
 
-The cumulative distribution function $F(t)$ shows the probability that an event
-takes place by time $T = t$. The cumulative distribution function is sometimes
-called the cumulative incidence function:
+The cumulative distribution function $F(t)$ gives the probability that an event
+takes place by time $T = t$:
 
 $$
 F(t) = P(T \leq t) = 1 - P(T > t) = 1 - S(t)
 $$
 
+The cumulative distribution function is sometimes called the cumulative
+incidence function. Note that the definitions for $S(t)$ and $F(t)$ are the same
+regardless whether $T$ is discrete or continuous.
+
 ### f(t)
 
-The function $f(t)$ is a probability density function
-if the variable $T$ is continuous and a probability mass function if $T$ is
-discrete.
-
-If $f(t)$ is a PMF, then:
+The probability mass function $f(t)$ for a discrete event time $T$ is defined
+as:
 
 $$
 f(t) = P(T = t)
 $$
 
-otherwise:
+The probability density function $f(t)$ for a continuous event time $T$ is
+defined as:
 
 $$
-f(t) \cdot \Delta t = P(t < T < t + \Delta t)
+f(t) \cdot \Delta t \approx P(t < T < t + \Delta t)
 $$
 
-The survival function $S(t)$ can then also be defined in terms of $f(t)$. For
-a discrete event time $T$:
+The survival function $S(t)$ can then be defined in terms of $f(t)$. For a
+discrete event time $T$:
 
 $$
 S(t) = P(T > t) = \sum_{u > t} f(u)
@@ -94,14 +98,14 @@ $$
 For a continuous event time $T$:
 
 $$
-S(t) = \int_{t}^{\inf} f(u) du
+S(t) = \int_{t}^{\infty} f(u) du
 $$
 
 ### λ(t)
 
 The hazard function $\lambda(t)$ gives the instantaneous risk of the event
-occurring at $T = t$ given that the event has not yet occurred by $T = t$. The
-hazard is also called the instantaneous failure rate, force of mortality, or
+occurring at time $T = t$ given that the event has not yet occurred by $T = t$.
+The hazard is also called the instantaneous failure rate, force of mortality, or
 incidence. For a discrete event time $T$:
 
 $$
@@ -179,13 +183,14 @@ ggplot(haz_ex_02_dat, aes(x = event_time, y = pdf)) +
 
 ### Λ(t)
 
-The cumulative hazard function is defined as:
+The cumulative hazard function $\Lambda(t)$ for a discrete event time $T$ is
+defined as:
 
 $$
 \Lambda(t) = \sum_{u \leq t} \lambda(u)
 $$
 
-or for a continuous event time:
+For a continuous event time $T$:
 
 $$
 \Lambda(t) = \int_{0}^{t} \lambda(u) du
@@ -193,16 +198,16 @@ $$
 
 ### Mean and Median
 
-The mean survival time is defined as follows for a discrete event time:
+The mean survival time is defined as follows for a discrete event time $T$:
 
 $$
 \mu = \sum_{u \in \Omega} u \cdot f(u)
 $$
 
-And for a continuous event time:
+And for a continuous event time $T$:
 
 $$
-\mu = \int_{0}^{\inf} u \cdot f(u) du 
+\mu = \int_{0}^{\infty} u \cdot f(u) du 
 $$
 
 The median survival time $\tau$ is defined as:
@@ -506,7 +511,7 @@ $$
 The survival function $S(t)$ is defined as:
 
 $$
-S(t) = \int_{t}^{\inf} f(u) du
+S(t) = \int_{t}^{\infty} f(u) du
 $$
 
 Using integration by substitution, we have:
@@ -540,10 +545,10 @@ Bringing this back to:
 
 $$
 \begin{align}
-S(t) &= \int_{t}^{\inf} f(u) du \\
-  &= \big[ - \exp(- \lambda u) \big]_t^{\inf} \\
-  &= - \exp(- \lambda \inf) - \big( - \exp(- \lambda t) \big) \\
-  &= \exp(- \lambda t) - \exp(- \lambda \inf) \\
+S(t) &= \int_{t}^{\infty} f(u) du \\
+  &= \big[ - \exp(- \lambda u) \big]_t^{\infty} \\
+  &= - \exp(- \lambda \infty) - \big( - \exp(- \lambda t) \big) \\
+  &= \exp(- \lambda t) - \exp(- \lambda \infty) \\
   &= \exp(- \lambda t)
 \end{align}
 $$
