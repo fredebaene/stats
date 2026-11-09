@@ -615,6 +615,156 @@ S(\tau) = 0.5 = \exp(- \lambda \tau)
   \leftrightarrow \tau = \frac{- \log(0.5)}{\lambda}
 $$
 
+## Comparison
+
+We often want to compare the estimated survival probabilities $\hat{S}(t)$ between
+two or more groups. A well-known test to compare survival between groups is the
+**log-rank** test. To construct the test statistic for this test, we consider
+the data at each distinct event time separately, and then combine across the
+distinct event times.
+
+If we consider the data at a particular event time $T = t$, we have:
+
+```{r}
+#| echo: false
+#| label: tbl-setup-lr-test
+#| tbl-cap: "The setup for a log-rank test at each distinct event time."
+
+df <- data.frame(
+  Group = c(0, 1, "Total"),
+  Yes   = c("D0", "D1", "D"),
+  No    = c("N0 - D0", "N1 - D1", "N - D"),
+  Total = c("N0", "N1", "N")
+)
+
+kable(df, align = "lccc", booktabs = TRUE) %>%
+  add_header_above(c(" " = 1, "Fail" = 2, " " = 1)) %>%
+  row_spec(2, hline_after = TRUE)
+```
+
+We see that for $T = t$, we have $N$ patients at risk. Of these $N$ patients,
+there are $D$ that experience the event. If there is no association between
+experiencing the event and group membership, then $D0$ should approximately
+equal $R0 \cdot D / N$. Fixing the margins then gives a hypergeometric distribution
+for $D0$:
+
+$$
+D0 \sim Hypergeometric(N, D, N0)
+$$
+
+with $N$ the total number of patients at risk at $T = t$, $D$ the total number
+of patients experiencing the event at $T = t$, and $N0$ the total number of patients
+at risk in group 0. According to the properties of hypergeometric distribution,
+we have:
+
+$$
+\mathbb{E}(D0) = N0 \cdot \frac{D}{N}
+$$
+
+and
+
+$$
+Var(D0) = \frac{N0 \cdot N1 \cdot D \cdot (N - D)}{N^2 \cdot (N - 1)}
+$$
+
+For every distinct event time, the difference between the observed and
+expected value and the variance is calculated and summed. This is then the
+log-rank test statistic, which follows a $\chi_1^2$ distribution.
+
+
+```{r}
+# Add group membership
+set.seed(8319)
+
+dat_wo_cens <- dat_wo_cens |>
+  add_column(Group = rbinom(n = nrow(dat_wo_cens), size = 1, prob = 0.5))
+```
+
+```{r}
+# Create a summary table with the data at each distinct event tie
+dat_wo_cens_summ <- survfit(Surv(Time, rep(1, nrow(dat_wo_cens))) ~ Group, dat_wo_cens) |>
+  tidy() |>
+  select(time, n.risk, n.event, n.censor, strata) |>
+  pivot_wider(
+    id_cols = c(time),
+    names_from = c(strata),
+    values_from = c(n.risk, n.event, n.censor)
+  ) |>
+  select(time, ends_with("Group=0"), ends_with("Group=1")) |>
+  arrange(time) |>
+  replace_na(list(
+    "n.event_Group=0" = 0,
+    "n.censor_Group=0" = 0,
+    "n.event_Group=1" = 0,
+    "n.censor_Group=1" = 0
+  )) |>
+  fill("n.risk_Group=0", "n.risk_Group=1", .direction = "up") |>
+  replace_na(list("n.risk_Group=0" = 0, "n.risk_Group=1" = 0)) |>
+  rowwise() |>
+  mutate(n.risk = sum(`n.risk_Group=0`, `n.risk_Group=1`)) |>
+  mutate(n.event = sum(`n.event_Group=0`, `n.event_Group=1`)) |>
+  mutate(n.censor = sum(`n.censor_Group=0`, `n.censor_Group=1`)) |>
+  ungroup()
+```
+
+```{r}
+#| echo: false
+#| label: tbl-dat-wo-cens-summ
+#| tbl-cap: "A summary of the sample data without censoring."
+
+dat_wo_cens_summ |>
+  kable(col.names = c(
+    "Time",
+    "R (Group 0)",
+    "D (Group 0)",
+    "C (Group 0)",
+    "R (Group 1)",
+    "D (Group 1)",
+    "C (Group 1)",
+    "R",
+    "D",
+    "C"
+  )) |>
+  kable_styling()
+```
+
+```{r}
+# Calculate the values for the LR test statistic manually
+dat_wo_cens_summ <- dat_wo_cens_summ |>
+  mutate(
+    E = `n.risk_Group=0`*n.event/n.risk,
+    `O-E` = `n.event_Group=0` - E,
+    V = (`n.risk_Group=0`*`n.risk_Group=1`*n.event*(n.risk - n.event)) / (n.risk^2*(n.risk-1))
+  ) |>
+  replace_na(list(V = 0))
+```
+
+We must now sum the differences between the observed and expected values and
+the variances across the distinct event times to obtain the test statistic.
+
+```{r}
+# Sum the quantities
+num_test_stat <- sum(dat_wo_cens_summ["O-E"])^2
+den_test_stat <- sum(dat_wo_cens_summ["V"])
+
+# Calculate the test statistic
+num_test_stat / den_test_stat
+```
+
+We can now use the **survival** package to calculate the same:
+
+```{r}
+# Use the survival package for the log-rank test
+lr_test <- survdiff(Surv(Time, rep(1, nrow(dat_wo_cens))) ~ Group, dat_wo_cens)
+
+lr_test
+```
+
+With a test statistic value of $\chi^2 = `r lr_test$chisq`$.
+
+The log-rank (LR) test is most powerful with proportional hazards. This can be
+checked 
+
 ## Case
 
 To demonstrate the methods explained in this chapter, we use the **Heart
