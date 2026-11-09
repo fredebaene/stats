@@ -1,6 +1,70 @@
 # Concepts
 
-This chapter outlines several concepts that are encountered within statistics.
+This chapter outlines several concepts that are encountered within statistics
+applied to clinical trials.
+
+## Objectives
+
+A clinical trial must have a primary objective (aim), and can have one or more
+secondary objectives.
+
+### Safety
+
+For each new treatment, investigators must assess whether it is **acceptable**
+and **safe** for use, and check what side effects it may cause. When focusing on
+safety, the investigators focus on the occurrence of adverse events (AE),
+serious adverse events (SAE), abnormal laboratory findings, tolerability issues,
+etc.
+
+The main questions are:
+
+* Is the treatment acceptable for use in humans?
+* Is the treatment safe for use in humans?
+* Does the treatment cause any side effects?
+
+### Efficacy
+
+For each new treatment, the investigators must assess if the treatment actually
+helps with the issue at hand. The treatment must alleviate symptoms or provide a
+cure in order for it to be considered to have an effect. Efficacy focuses on the
+effect of the treatment **under ideal conditions**, i.e., in a strongly
+regulated environment, such as a clinical trial where patients are followed up
+on closely.
+
+To estimate efficacy of a treatment, the **per-protocol set** (PPS) of patients
+must be analyzed. In the case of intercurrent events, the hypothetical strategy
+assists in finding an estimate for the efficacy.
+
+The main questions are:
+
+* Does the treatment actually work in ideal conditions?
+* How well does the treatment perform in ideal conditions?
+
+### Effectiveness
+
+Effectiveness seems the same as efficacy, but it focuses on the real-world
+effect of the treatment. Under ideal conditions, investigators can assess
+whether the treatment has any potential of an effect. In the real world,
+however, an initiated treatment may be stopped, or patients have to take rescue
+medication. The questions remains, then, if the treatment still performs as
+well.
+
+To estimate effectiveness of a treatment, the **full analysis set** (FAS)
+(intention to treat (ITT) set) of patients must be analyzed. In the case of
+intercurrent events, the treatment policy strategy assts in assessing
+effectiveness.
+
+The main questions are:
+
+* Does the treatment actually work in real-world conditions?
+* How well does the treatment perform in real-world conditions?
+
+### Efficiency
+
+### Usability
+
+A treatment must also be usable for the users. Users include patients but also
+caregivers and clinicians.
 
 ## Definitions
 
